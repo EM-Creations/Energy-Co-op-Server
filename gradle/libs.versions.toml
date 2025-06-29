@@ -1,0 +1,16 @@
+[versions]
+# Library versions
+
+# Plugin versions
+springBootVersion = "3.5.3"
+
+springDependencyManagementVersion = "1.1.7"
+
+asciiDoctorVersion = "4.0.4"
+
+[libraries]
+
+[plugins]
+springBoot = { id = "org.springframework.boot", version.ref = "springBootVersion" }
+springDependencyManagement = { id = "io.spring.dependency-management", version.ref = "springDependencyManagementVersion" }
+asciiDoctor = { id = "org.asciidoctor.jvm.convert", version.ref = "asciiDoctorVersion" }
