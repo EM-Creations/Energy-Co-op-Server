@@ -90,6 +90,7 @@ Energy Co-op Server is intended to be a Spring Boot server backend to facilitate
 gradle clean build
 ```
 5. Create a Run Configuration to run the `gradle bootRun` task.
+6. Check the server is running by going to the [Swagger UI](http://localhost:8080/swagger-ui/index.html) or the [H2 database console](http://localhost:8080/h2-console/).
 
 ## Development server
 

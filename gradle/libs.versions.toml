@@ -1,5 +1,6 @@
 [versions]
 # Library versions
+springDocVersion = "2.8.3"
 
 # Plugin versions
 springBootVersion = "3.5.3"
@@ -9,6 +10,7 @@ springDependencyManagementVersion = "1.1.7"
 asciiDoctorVersion = "4.0.4"
 
 [libraries]
+springDoc = { group = "org.springdoc", name = "springdoc-openapi-starter-webmvc-ui", version.ref = "springDocVersion" }
 
 [plugins]
 springBoot = { id = "org.springframework.boot", version.ref = "springBootVersion" }
