@@ -26,6 +26,7 @@ repositories {
 
 extra["snippetsDir"] = file("build/generated-snippets")
 extra["springCloudVersion"] = "2025.0.0"
+val mockitoAgent = configurations.create("mockitoAgent")
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -42,6 +43,8 @@ dependencies {
 	runtimeOnly("com.h2database:h2")
 	annotationProcessor("org.projectlombok:lombok")
 
+	testImplementation(libs.mockito)
+	mockitoAgent(libs.mockito) { isTransitive = false }
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.graphql:spring-graphql-test")
 	testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
@@ -57,6 +60,7 @@ dependencyManagement {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+	jvmArgs?.add("-javaagent:${mockitoAgent.asPath}")
 }
 
 tasks.test {

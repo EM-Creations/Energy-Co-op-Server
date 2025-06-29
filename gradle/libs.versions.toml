@@ -2,6 +2,8 @@
 # Library versions
 springDocVersion = "2.8.3"
 
+mockitoVersion = "5.14.0"
+
 # Plugin versions
 springBootVersion = "3.5.3"
 
@@ -11,6 +13,7 @@ asciiDoctorVersion = "4.0.4"
 
 [libraries]
 springDoc = { group = "org.springdoc", name = "springdoc-openapi-starter-webmvc-ui", version.ref = "springDocVersion" }
+mockito = { module = "org.mockito:mockito-core", version.ref = "mockitoVersion" }
 
 [plugins]
 springBoot = { id = "org.springframework.boot", version.ref = "springBootVersion" }
