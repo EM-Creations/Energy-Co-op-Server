@@ -2,7 +2,7 @@
 # Library versions
 springDocVersion = "2.8.3"
 
-mockitoVersion = "5.14.0"
+mockitoVersion = "5.18.0"
 
 # Plugin versions
 springBootVersion = "3.5.3"
