@@ -21,4 +21,11 @@ class ManagementControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/hello"))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    @DisplayName("GET /threadCheck returns 200 OK")
+    void testThreadCheck() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/threadCheck"))
+                .andExpect(status().isOk());
+    }
 }

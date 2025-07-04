@@ -14,4 +14,10 @@ public class ManagementController {
     public String hello() {
         return "Hello, backend is running!";
     }
+
+    @GetMapping(name = "Thread Check", value = "/threadCheck")
+    @Operation(summary = "Thread Check", description = "Check details of the current thread handling the request")
+    public String threadCheck() {
+        return Thread.currentThread().toString();
+    }
 }
