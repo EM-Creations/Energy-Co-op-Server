@@ -37,6 +37,7 @@ dependencies {
 	implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
 	implementation("org.springframework.session:spring-session-core")
 	implementation(libs.springDoc)
+	implementation(libs.logback)
 
 	compileOnly("org.projectlombok:lombok")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")

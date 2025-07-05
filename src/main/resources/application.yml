@@ -1,0 +1,13 @@
+spring:
+    application:
+        name: energycoop
+    threads:
+        virtual:
+            enabled: true
+
+external:
+    api:
+        graig-fatha:
+            url: https://api.vensys.de:8443/api/v1.0
+            tid: your_tid_here
+            key: your_api_key_here

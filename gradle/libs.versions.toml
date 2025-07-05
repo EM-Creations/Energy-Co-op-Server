@@ -4,6 +4,8 @@ springDocVersion = "2.8.9"
 
 mockitoVersion = "5.18.0"
 
+logbackVersion = "1.5.18"
+
 # Plugin versions
 springBootVersion = "3.5.3"
 
@@ -14,6 +16,7 @@ asciiDoctorVersion = "4.0.4"
 [libraries]
 springDoc = { group = "org.springdoc", name = "springdoc-openapi-starter-webmvc-ui", version.ref = "springDocVersion" }
 mockito = { module = "org.mockito:mockito-core", version.ref = "mockitoVersion" }
+logback = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logbackVersion" }
 
 [plugins]
 springBoot = { id = "org.springframework.boot", version.ref = "springBootVersion" }

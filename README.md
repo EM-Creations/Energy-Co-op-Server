@@ -84,7 +84,7 @@ Energy Co-op Server is intended to be a Spring Boot server backend to facilitate
 
 1. [Install Java 21+](https://www.azul.com/downloads/?package=jdk#zulu)
 2. Clone a fork of this repository
-3. Update the values in the `src/main/resources/application.properties` file to values as needed.
+3. Update the API values in the `src/main/resources/application.yml` file to values as needed.
 4. Build and run all tests
 ```bash
 gradle clean build
