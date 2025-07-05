@@ -7,18 +7,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.co.emcreations.energycoop.dto.VensysEnergyYield;
-import uk.co.emcreations.energycoop.sourceclient.VensysGraigFathaClient;
+import uk.co.emcreations.energycoop.service.GraigFathaStatsService;
+import uk.co.emcreations.energycoop.service.GraigFathaStatsServiceImpl;
 
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Graig Fatha Statistics", description = "Statistics for the Graig Fatha wind farm")
 public class GraigFathaStatsController {
     @Autowired
-    private final VensysGraigFathaClient client;
+    private final GraigFathaStatsService graigFathaStatsService;
 
     @GetMapping(name = "Energy Yield", value = "/energyYield")
     @Operation(summary = "Energy Yield", description = "Returns today's energy yield")
     public VensysEnergyYield getEnergyYield() {
-        return client.getEnergyYield().data();
+        return graigFathaStatsService.getEnergyYield();
     }
 }

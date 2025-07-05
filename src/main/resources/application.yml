@@ -1,6 +1,9 @@
 spring:
     application:
         name: energycoop
+    h2:
+        console:
+            enabled: true
     threads:
         virtual:
             enabled: true
