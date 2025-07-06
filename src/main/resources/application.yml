@@ -8,6 +8,11 @@ spring:
         virtual:
             enabled: true
 
+scheduling:
+    enabled: true
+    graig-fatha:
+        schedule: "*/15 * * * *"
+
 external:
     api:
         graig-fatha:
