@@ -7,6 +7,10 @@ spring:
     threads:
         virtual:
             enabled: true
+    task:
+        scheduling:
+            pool:
+                size: 5
 
 scheduling:
     enabled: true
