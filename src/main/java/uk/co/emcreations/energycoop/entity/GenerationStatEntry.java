@@ -1,31 +1,30 @@
 package uk.co.emcreations.energycoop.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import uk.co.emcreations.energycoop.model.Site;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
+@Data
 @Entity
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PACKAGE)
 public class GenerationStatEntry implements Serializable {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private LocalDate timestamp;
+    @CreationTimestamp
+    private LocalDateTime timestamp;
 
     @Column(nullable = false)
     private int wattsGenerated;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private Site site;
 }

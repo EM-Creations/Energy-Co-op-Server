@@ -32,11 +32,9 @@ public class GraigFathaStatsServiceImpl implements GraigFathaStatsService {
         log.info("getEnergyYield() called");
         VensysEnergyYield energyYield = client.getEnergyYield().data();
 
-        GenerationStatEntry statEntry = GenerationStatEntry.builder()
-                .wattsGenerated(energyYield.value())
-                .timestamp(LocalDate.now())
-                .site(site)
-                .build();
+        var statEntry = new GenerationStatEntry();
+        statEntry.setWattsGenerated(energyYield.value());
+        statEntry.setSite(site);
 
         entityManager.persist(statEntry);
 
