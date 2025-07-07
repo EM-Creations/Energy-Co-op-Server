@@ -20,6 +20,6 @@ public class SchedulerConfig {
     public void logEnergyYield() {
         log.info("logEnergyYield running..");
 
-        log.info("Response = {}", graigFathaStatsService.getEnergyYield());
+        log.info("Response = {}", graigFathaStatsService.getMeanEnergyYield());
     }
 }

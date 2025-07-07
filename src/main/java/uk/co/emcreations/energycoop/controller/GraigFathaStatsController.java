@@ -6,9 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.co.emcreations.energycoop.dto.VensysEnergyYield;
+import uk.co.emcreations.energycoop.dto.VensysMeanData;
+import uk.co.emcreations.energycoop.dto.VensysPerformanceData;
 import uk.co.emcreations.energycoop.service.GraigFathaStatsService;
-import uk.co.emcreations.energycoop.service.GraigFathaStatsServiceImpl;
 
 @RestController
 @RequiredArgsConstructor
@@ -17,9 +17,15 @@ public class GraigFathaStatsController {
     @Autowired
     private final GraigFathaStatsService graigFathaStatsService;
 
-    @GetMapping(name = "Energy Yield", value = "/energyYield")
-    @Operation(summary = "Energy Yield", description = "Returns today's energy yield")
-    public VensysEnergyYield getEnergyYield() {
-        return graigFathaStatsService.getEnergyYield();
+    @GetMapping(name = "Current energy yield", value = "/energyYield")
+    @Operation(summary = "Current energy yield", description = "Returns today's current energy yield")
+    public VensysMeanData getEnergyYield() {
+        return graigFathaStatsService.getMeanEnergyYield();
+    }
+
+    @GetMapping(name = "Yesterday's performance", value = "/yesterdayPerformance")
+    @Operation(summary = "Yesterday's performance", description = "Returns yesterday's performance")
+    public VensysPerformanceData getYesterdayPerformance() {
+        return graigFathaStatsService.getYesterdayPerformance();
     }
 }

@@ -22,7 +22,7 @@ public class GenerationStatEntry implements Serializable {
     private LocalDateTime timestamp;
 
     @Column(nullable = false)
-    private int wattsGenerated;
+    private double wattsGenerated;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

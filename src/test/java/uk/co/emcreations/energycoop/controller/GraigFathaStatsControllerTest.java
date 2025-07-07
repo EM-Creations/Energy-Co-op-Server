@@ -7,7 +7,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import uk.co.emcreations.energycoop.dto.VensysEnergyYield;
+import uk.co.emcreations.energycoop.dto.VensysMeanData;
 import uk.co.emcreations.energycoop.service.GraigFathaStatsServiceImpl;
 
 import static org.mockito.Mockito.when;
@@ -24,9 +24,9 @@ class GraigFathaStatsControllerTest {
     @Test
     @DisplayName("GET /energyYield returns 200 OK")
     void testGetEnergyYield() throws Exception {
-        var vensysEnergyYield = VensysEnergyYield.builder().value(100).build();
+        var vensysEnergyYield = VensysMeanData.builder().value(100).build();
 
-        when(service.getEnergyYield()).thenReturn(vensysEnergyYield);
+        when(service.getMeanEnergyYield()).thenReturn(vensysEnergyYield);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/energyYield"))
                 .andExpect(status().isOk());
