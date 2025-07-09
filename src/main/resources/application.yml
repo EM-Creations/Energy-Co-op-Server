@@ -24,7 +24,9 @@ spring:
 scheduling:
     enabled: true
     graig-fatha:
-        schedule: "0 */15 * * * *"
+        schedule:
+            energy-yield: "0 */15 * * * *"
+            performance: "0 0 */6 * * *"
 
 external:
     api:
