@@ -16,6 +16,7 @@ import uk.co.emcreations.energycoop.entity.GenerationStatEntry;
 import uk.co.emcreations.energycoop.entity.PerformanceStatEntry;
 import uk.co.emcreations.energycoop.model.Site;
 import uk.co.emcreations.energycoop.service.GraigFathaStatsService;
+import uk.co.emcreations.energycoop.util.EntityHelper;
 
 @Slf4j
 @Configuration
@@ -36,7 +37,7 @@ public class SchedulerConfig {
 
         VensysMeanData energyYield = graigFathaStatsService.getMeanEnergyYield();
 
-        GenerationStatEntry statEntry = createGenerationStatEntry(energyYield, Site.GRAIG_FATHA);
+        GenerationStatEntry statEntry = EntityHelper.createGenerationStatEntry(energyYield, Site.GRAIG_FATHA);
         entityManager.persist(statEntry);
 
         log.info("Response = {}", energyYield);
@@ -48,45 +49,9 @@ public class SchedulerConfig {
 
         VensysPerformanceData performanceData = graigFathaStatsService.getYesterdayPerformance();
 
-        PerformanceStatEntry statEntry = createPerformanceStatEntry(performanceData, Site.GRAIG_FATHA);
+        PerformanceStatEntry statEntry = EntityHelper.createPerformanceStatEntry(performanceData, Site.GRAIG_FATHA);
         entityManager.persist(statEntry);
 
         log.info("Response = {}", performanceData);
-    }
-
-    private GenerationStatEntry createGenerationStatEntry(final VensysMeanData energyYield, final Site site) {
-        var statEntry = new GenerationStatEntry();
-        statEntry.setSite(site);
-        statEntry.setWattsGenerated(energyYield.value());
-        return statEntry;
-    }
-
-    private PerformanceStatEntry createPerformanceStatEntry(final VensysPerformanceData performanceData, final Site site) {
-        var statEntry = new PerformanceStatEntry();
-        statEntry.setSite(site);
-        statEntry.setForDate(performanceData.date());
-        statEntry.setWattsGenerated(performanceData.energyYield());
-        statEntry.setAvailability(performanceData.availability());
-        statEntry.setAveragePower(performanceData.powerAvg());
-        statEntry.setMaxPower(performanceData.powerMax());
-        statEntry.setAverageWind(performanceData.windAvg());
-        statEntry.setMaxWind(performanceData.windMax());
-        statEntry.setPowerProductionTime(performanceData.powerProductionTime());
-        statEntry.setLowWindTime(performanceData.lowWindTime());
-        statEntry.setErrorTime(performanceData.errorTime());
-        statEntry.setServiceTime(performanceData.serviceTime());
-        statEntry.setIceTime(performanceData.iceTime());
-        statEntry.setStormTime(performanceData.stormTime());
-        statEntry.setShadowTime(performanceData.shadowTime());
-        statEntry.setTwistTime(performanceData.twistTime());
-        statEntry.setGridFailureTime(performanceData.gridFailureTime());
-        statEntry.setCommFailureTime(performanceData.commFailureTime());
-        statEntry.setVisitTime(performanceData.visitTime());
-        statEntry.setServerStopTime(performanceData.serverStopTime());
-        statEntry.setFireTime(performanceData.fireTime());
-        statEntry.setBatMonitoringTime(performanceData.batMonitoringTime());
-        statEntry.setNightShutdownTime(performanceData.nightShutdownTime());
-
-        return statEntry;
     }
 }
