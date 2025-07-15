@@ -1,0 +1,13 @@
+okta:
+    oauth2:
+        enabled: false
+        issuer: https://dev-energycoop.uk.auth0.com/
+        client-id: your_client_id_here
+        client-secret: your_client_secret_here
+
+external:
+    api:
+        graig-fatha:
+            url: https://api.vensys.de:8443/api/v1.0
+            tid: your_tid_here
+            key: your_api_key_here
