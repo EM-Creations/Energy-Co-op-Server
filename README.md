@@ -68,6 +68,8 @@ Energy Co-op Server is intended to be a Spring Boot server backend to facilitate
 ### Built With
 
 * [![Java][java]][java-url]
+* [![Spring Boot][springboot]][springboot-url]
+* [![Auth0][auth0]][auth0-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -79,12 +81,15 @@ Energy Co-op Server is intended to be a Spring Boot server backend to facilitate
 ### Prerequisites
 
 * Java JDK 21+
+* Vensys API keys
+* Auth0 account
+* [Podman (optional)](https://podman-desktop.io/)
 
 ### Installation and development
 
 1. [Install Java 21+](https://www.azul.com/downloads/?package=jdk#zulu)
 2. Clone a fork of this repository
-3. Update the API values in the `src/main/resources/application.yml` file to values as needed.
+3. Update the values in the `src/main/resources/application.yml` file as needed (auth0, api details etc).
 4. Build and run all tests
 ```bash
 gradle clean build
@@ -112,11 +117,25 @@ gradle clean build
 
 ## Running unit tests
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+To execute unit tests with [JUnit 5](https://junit.org/), use the following command:
 
 ```bash
 gradle clean build
 ```
+
+## Building a Podman image
+1. First build the project using Gradle:
+```bash
+gradle clean build
+```
+2. Download and install [Podman Desktop](https://podman-desktop.io/)
+3. Open Podman Desktop
+4. Go to Containers > Create
+5. Choose "Containerfile or Dockerfile"
+6. Select the `Containerfile` in the root of this repository as the Containerfile path
+7. Give the image a name, e.g. `energy-coop-server` and build it
+8. When running the image, set the port mapping to `8080:8080` on the "Basic" tab
+9. Click "Start Container" to run the server
 
 <!-- USAGE EXAMPLES -->
 ## Usage
@@ -168,3 +187,7 @@ Distributed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 
 [product-screenshot]: images/screenshot.png
 [java]: https://img.shields.io/badge/Java-DD0031?style=for-the-badge&logo=java&logoColor=white
 [java-url]: https://java.com/
+[auth0]: https://img.shields.io/badge/Auth0-black?style=for-the-badge&logo=auth0&logoColor=white
+[auth0-url]: https://auth0.com/
+[springboot]: https://img.shields.io/badge/Spring%20Boot-green?style=for-the-badge&logo=spring&logoColor=white
+[springboot-url]: https://spring.io/projects/spring-boot
