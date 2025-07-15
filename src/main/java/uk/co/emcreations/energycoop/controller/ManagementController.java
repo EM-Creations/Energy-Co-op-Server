@@ -26,8 +26,9 @@ public class ManagementController {
         return Thread.currentThread().toString();
     }
 
-    @GetMapping("/token")
-    public String token(Model model, @AuthenticationPrincipal OidcUser principal) {
+    @GetMapping(name = "Token check", value = "/tokenCheck")
+    @Operation(summary = "Token check", description = "Check details of the principal's token")
+    public String tokenCheck(Model model, @AuthenticationPrincipal OidcUser principal) {
         if (principal != null) {
             model.addAttribute("profile", principal.getClaims());
         }
