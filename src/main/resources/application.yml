@@ -28,6 +28,12 @@ scheduling:
             energy-yield: "0 */15 * * * *"
             performance: "0 0 */6 * * *"
 
+okta:
+    oauth2:
+        issuer: your_okta_issuer_here
+        client-id: your_client_id_here
+        client-secret: your_client_secret_here
+
 external:
     api:
         graig-fatha:

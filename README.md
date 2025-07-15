@@ -85,17 +85,25 @@ Energy Co-op Server is intended to be a Spring Boot server backend to facilitate
 * Auth0 account
 * [Podman (optional)](https://podman-desktop.io/)
 
+### Auth0 setup
+1. Create an Auth0 account at [Auth0](https://auth0.com/)
+2. Create a new application in the Auth0 dashboard
+3. Set the callback URL to `http://localhost:8080/login/oauth2/code/okta`
+4. Set the logout URL to `http://localhost:8080`
+
 ### Installation and development
 
 1. [Install Java 21+](https://www.azul.com/downloads/?package=jdk#zulu)
 2. Clone a fork of this repository
-3. Update the values in the `src/main/resources/application.yml` file as needed (auth0, api details etc).
+3. Update the values in the `src/main/resources/application.yml` file as needed (okta oauth2 auth0, api details etc).
 4. Build and run all tests
 ```bash
 gradle clean build
 ```
 5. Create a Run Configuration to run the `gradle bootRun` task.
-6. Check the server is running by going to the [Swagger UI](http://localhost:8080/swagger-ui/index.html) or the [H2 database console](http://localhost:8080/h2-console/).
+6. Login to Auth0 by [clicking here](http://localhost:8080/login/oauth2/code/okta)
+7. You can also logout by [clicking here](http://localhost:8080/logout)
+8. Check the server is running by going to the [Swagger UI](http://localhost:8080/swagger-ui/index.html) or the [H2 database console](http://localhost:8080/h2-console/).
 
 ## Development server
 
