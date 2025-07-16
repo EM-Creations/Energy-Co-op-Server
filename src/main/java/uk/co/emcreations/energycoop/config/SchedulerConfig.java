@@ -6,8 +6,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import uk.co.emcreations.energycoop.dto.VensysMeanData;
@@ -23,7 +23,7 @@ import uk.co.emcreations.energycoop.util.EntityHelper;
 @Transactional
 @EnableScheduling
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "scheduling.enabled", havingValue = "true", matchIfMissing = false)
+@Profile("!dev")
 public class SchedulerConfig {
     @PersistenceContext
     private final EntityManager entityManager;

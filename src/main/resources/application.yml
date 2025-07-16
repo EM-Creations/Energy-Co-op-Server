@@ -22,7 +22,6 @@ spring:
             ddl-auto: update
 
 scheduling:
-    enabled: true
     graig-fatha:
         schedule:
             energy-yield: "0 */15 * * * *"
@@ -30,7 +29,6 @@ scheduling:
 
 okta:
     oauth2:
-        enabled: true
         issuer: https://dev-energycoop.uk.auth0.com/
         client-id: your_client_id_here
         client-secret: your_client_secret_here
