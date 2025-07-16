@@ -11,6 +11,7 @@ import uk.co.emcreations.energycoop.dto.VensysMeanData;
 import uk.co.emcreations.energycoop.service.GraigFathaStatsServiceImpl;
 
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(GraigFathaStatsController.class)
@@ -28,7 +29,7 @@ class GraigFathaStatsControllerTest {
 
         when(service.getMeanEnergyYield()).thenReturn(vensysEnergyYield);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/energyYield"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/energyYield").with(oidcLogin()))
                 .andExpect(status().isOk());
     }
 }

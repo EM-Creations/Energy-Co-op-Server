@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ManagementController.class)
@@ -18,14 +19,14 @@ class ManagementControllerTest {
     @Test
     @DisplayName("GET /hello returns 200 OK")
     void testGetStatus() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/hello"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/hello").with(oidcLogin()))
                 .andExpect(status().isOk());
     }
 
     @Test
     @DisplayName("GET /threadCheck returns 200 OK")
     void testThreadCheck() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/threadCheck"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/threadCheck").with(oidcLogin()))
                 .andExpect(status().isOk());
     }
 }
