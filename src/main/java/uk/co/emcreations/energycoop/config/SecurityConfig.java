@@ -14,6 +14,11 @@ import java.io.IOException;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+/**
+ * Security configuration for the application.
+ * This configuration uses Okta for OAuth2 login and handles logout.
+ * It allows public access to certain endpoints and secures all other requests.
+ */
 @Configuration
 @EnableWebSecurity
 @Profile("!dev")

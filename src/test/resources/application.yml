@@ -1,6 +1,8 @@
 okta:
     oauth2:
         issuer: https://dev-energycoop.uk.auth0.com/
+        audience: http://localhost:8080/
+        mgmt-audience: https://dev-energycoop.uk.auth0.com/api/v2/
         client-id: your_client_id_here
         client-secret: your_client_secret_here
 
