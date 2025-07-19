@@ -1,9 +1,8 @@
 package uk.co.emcreations.energycoop.sourceclient;
 
 import lombok.Data;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.SessionScope;
 
 /**
  * This class holds the Auth0 Management API token.
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Component;
  */
 @Data
 @Component
-@Scope(value = "singleton", proxyMode = ScopedProxyMode.TARGET_CLASS)
+@SessionScope
 public class Auth0ManagementApiToken {
     private String accessToken;
 }
