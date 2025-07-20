@@ -87,7 +87,7 @@ jobs:
 
       - name: downcase IMAGE_REGISTRY
         run: |
-          echo "IMAGE_REGISTRY=${env.IMAGE_REGISTRY@L}" >> "${env.IMAGE_REGISTRY}"
+          IMAGE_REGISTRY=${IMAGE_REGISTRY,,}
 
       - name: Push to GitHub Container Registry
         id: push-to-ghcr
