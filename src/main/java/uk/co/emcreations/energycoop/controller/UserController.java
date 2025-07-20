@@ -26,4 +26,10 @@ public class UserController {
     public ResponseEntity<User> currentUser(@AuthenticationPrincipal OidcUser principal) {
         return ResponseEntity.ok(userService.getUserFromPrincipal(principal));
     }
+
+    @GetMapping(name = "Current User ownership", value = "/currentUser/ownership")
+    @Operation(summary = "Current User ownership", description = "Returns the current user's ownership details")
+    public ResponseEntity<String> currentUserOwnership(@AuthenticationPrincipal OidcUser principal) {
+        return ResponseEntity.ok(userService.getOwnership(principal));
+    }
 }

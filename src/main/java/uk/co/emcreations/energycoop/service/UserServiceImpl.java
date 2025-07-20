@@ -1,12 +1,12 @@
-package uk.co.emcreations.energycoop.model;
+package uk.co.emcreations.energycoop.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
-import uk.co.emcreations.energycoop.service.AuthService;
-import uk.co.emcreations.energycoop.service.UserService;
+import uk.co.emcreations.energycoop.model.User;
+import uk.co.emcreations.energycoop.sourceclient.Auth0ManagementClient;
 
 import java.util.Map;
 
@@ -15,7 +15,10 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     @Autowired
-    private final AuthService authService;
+    private final Auth0Service authService;
+
+    @Autowired
+    private final Auth0ManagementClient managementClient;
 
     @Override
     public User getUserFromPrincipal(final OidcUser principal) {
@@ -33,6 +36,16 @@ public class UserServiceImpl implements UserService {
                 .imageURL(picture)
                 .email(email)
                 .build();
+    }
+
+    @Override
+    public String getOwnership(final OidcUser principal) {
+        log.info("getOwnership() called");
+
+        User user = getUserFromPrincipal(principal);
+        authService.setManagementAccessToken();
+
+        return managementClient.getUser(user.userId());
     }
 
 }

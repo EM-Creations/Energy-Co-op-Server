@@ -5,4 +5,6 @@ import uk.co.emcreations.energycoop.model.User;
 
 public interface UserService {
     User getUserFromPrincipal(final OidcUser principal);
+
+    String getOwnership(final OidcUser principal);
 }

@@ -26,14 +26,19 @@ public class Auth0Service implements AuthService {
     public String getPermissionsForUser(final String userId) {
         log.info("getPermissionsForUser() called");
 
-        ManagementAccessToken accessToken = auth0Client.getAccessToken();
-        auth0ManagementApiToken.setAccessToken(accessToken.access_token());
+        setManagementAccessToken();
 
         String permissions = auth0ManagementClient.getPermissionsForUser(userId);
 
         log.info("Permissions for user {}: {}", userId, permissions);
 
         return permissions;
+    }
+
+    @Override
+    public void setManagementAccessToken() {
+        ManagementAccessToken accessToken = auth0Client.getAccessToken();
+        auth0ManagementApiToken.setAccessToken(accessToken.access_token());
     }
 
 }

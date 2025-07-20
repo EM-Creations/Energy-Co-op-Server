@@ -50,4 +50,20 @@ class UserControllerTest {
 
         assertEquals(expectedUser, actualUser);
     }
+
+    @Test
+    @DisplayName("GET /currentUser/ownership returns 200 OK")
+    void testGetCurrentUserOwnership() throws Exception {
+        var expectedOwnership = "ownership details";
+
+        when(userService.getOwnership(any(OidcUser.class))).thenReturn(expectedOwnership);
+
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/currentUser/ownership").with(oidcLogin()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String json = result.getResponse().getContentAsString();
+
+        assertEquals(expectedOwnership, json);
+    }
 }

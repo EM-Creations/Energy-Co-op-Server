@@ -13,4 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface Auth0ManagementClient {
     @GetMapping(value = "api/v2/users/{userId}/permissions")
     String getPermissionsForUser(@PathVariable String userId);
+
+    @GetMapping(value = "api/v2/users/{userId}")
+    String getUser(@PathVariable String userId);
 }
