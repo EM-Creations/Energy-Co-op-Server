@@ -34,4 +34,11 @@ class ManagementControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/threadCheck").with(oidcLogin()))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    @DisplayName("GET /tokenCheck returns 200 OK")
+    void testTokenCheck() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/tokenCheck").with(oidcLogin()))
+                .andExpect(status().isOk());
+    }
 }
