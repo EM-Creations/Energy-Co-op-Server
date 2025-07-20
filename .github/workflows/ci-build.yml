@@ -51,6 +51,8 @@ jobs:
 
   OCI-Image:
     runs-on: ubuntu-latest
+    needs:
+      - Build-With-Tests-Linux
 
     steps:
       - uses: actions/checkout@v4
