@@ -1,0 +1,19 @@
+name: Build image using Containerfile
+on: [push]
+
+jobs:
+  build:
+    name: Build image
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Buildah Action
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: energycoop-server
+          tags: latest v0.1 ${{ github.sha }}
+          oci: true
+          containerfiles: |
+            ./Containerfile
