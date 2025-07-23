@@ -6,7 +6,7 @@ mockitoVersion = "5.18.0"
 
 logbackVersion = "1.5.18"
 
-auth0Version = "3.0.5"
+auth0Version = "3.0.7"
 
 # Plugin versions
 springBootVersion = "3.5.3"
