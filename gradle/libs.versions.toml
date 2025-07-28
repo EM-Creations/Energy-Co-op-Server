@@ -9,7 +9,7 @@ logbackVersion = "1.5.18"
 auth0Version = "3.0.7"
 
 # Plugin versions
-springBootVersion = "3.5.3"
+springBootVersion = "3.5.4"
 
 springDependencyManagementVersion = "1.1.7"
 
