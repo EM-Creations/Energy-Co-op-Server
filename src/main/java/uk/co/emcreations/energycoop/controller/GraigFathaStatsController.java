@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.co.emcreations.energycoop.dto.VensysMeanData;
 import uk.co.emcreations.energycoop.dto.VensysPerformanceData;
+import uk.co.emcreations.energycoop.security.HasGraigFathaAPIRead;
 import uk.co.emcreations.energycoop.service.GraigFathaStatsService;
 
 @RestController
@@ -19,12 +20,14 @@ public class GraigFathaStatsController {
     @Autowired
     private final GraigFathaStatsService graigFathaStatsService;
 
+    @HasGraigFathaAPIRead
     @GetMapping(name = "Current energy yield", value = "/energyYield")
     @Operation(summary = "Current energy yield", description = "Returns today's current energy yield")
     public VensysMeanData getEnergyYield() {
         return graigFathaStatsService.getMeanEnergyYield();
     }
 
+    @HasGraigFathaAPIRead
     @GetMapping(name = "Yesterday's performance", value = "/yesterdayPerformance")
     @Operation(summary = "Yesterday's performance", description = "Returns yesterday's performance")
     public VensysPerformanceData getYesterdayPerformance() {
