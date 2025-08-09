@@ -21,6 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(GraigFathaStatsController.class)
 class GraigFathaStatsControllerTest {
     private final static ObjectMapper objectMapper = new ObjectMapper();
+    private final static String baseURL = "/api/v1/graigFatha/stats";
 
     @Autowired
     private MockMvc mockMvc;
@@ -35,7 +36,7 @@ class GraigFathaStatsControllerTest {
 
         when(service.getMeanEnergyYield()).thenReturn(expectedEnergyYield);
 
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/energyYield").with(oidcLogin()))
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/energyYield").with(oidcLogin()))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -52,10 +53,7 @@ class GraigFathaStatsControllerTest {
 
         when(service.getYesterdayPerformance()).thenReturn(expectedYesterdayPerformance);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/yesterdayPerformance").with(oidcLogin()))
-                .andExpect(status().isOk());
-
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/yesterdayPerformance").with(oidcLogin()))
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/yesterdayPerformance").with(oidcLogin()))
                 .andExpect(status().isOk())
                 .andReturn();
 
