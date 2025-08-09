@@ -83,13 +83,36 @@ Energy Co-op Server is intended to be a Spring Boot server backend to facilitate
 * Java JDK 21+
 * Vensys API keys
 * Auth0 account
+* [UI Project setup](https://github.com/EM-Creations/Energy-Co-op-UI)
 * [Podman (optional)](https://podman-desktop.io/)
 
 ### Auth0 setup
+Authentication is managed from the UI side, the server side checks permissions and that the token from the UI is valid.
 1. Create an Auth0 account at [Auth0](https://auth0.com/)
 2. Create a new application in the Auth0 dashboard
-3. Set the callback URL to `http://localhost:8080/login/oauth2/code/okta`
-4. Set the logout URL to `http://localhost:8080`
+3. Set the callback URL to `http://localhost:4200`
+4. Set the logout URL to `http://localhost:4200`
+5. Copy the domain, client id and secret from the Auth0 application settings
+6. Update the `src/main/resources/application.yml` file with the Auth0 details, issuer is the domain, client id and
+secret are the client id and secret from the Auth0 application settings
+7. Create a new API in the Auth0 dashboard and enable RBAC, then set the identifier to a URL (it does not need to be accessible)
+8. Update the `src/main/resources/application.yml` file with the Auth0 API identifier as the audience
+9. Lastly, create a new Action Trigger for "post-login" in the Auth0 dashboard, this will be used to add the user's email to the token.
+   - Use the following code in the Action Trigger:
+```javascript
+exports.onExecutePostLogin = async (event, api) => {
+  const namespace = 'ownerships';
+  const { ownerships } = event.user.app_metadata;
+
+  if (event.authorization) {
+    // Add site ownership details to the ID token
+    api.idToken.setCustomClaim(`${namespace}`, ownerships);
+
+    // Add site ownership details to the access token (may not be required)
+    api.accessToken.setCustomClaim(`${namespace}`, ownerships);
+  }
+};
+```
 
 ### Installation and development
 
@@ -100,10 +123,14 @@ Energy Co-op Server is intended to be a Spring Boot server backend to facilitate
 ```bash
 gradle clean build
 ```
-5. Create a Run Configuration to run the `gradle bootRun` task.
-6. Login to Auth0 by [clicking here](http://localhost:8080/login/oauth2/code/okta)
-7. You can also logout by [clicking here](http://localhost:8080/logout)
-8. Check the server is running by going to the [Swagger UI](http://localhost:8080/swagger-ui/index.html) or the [H2 database console](http://localhost:8080/h2-console/).
+5. Create a Run Configuration to run the `gradle bootRun` task
+6. Check the server is running by going to the [Swagger UI](http://localhost:8080/swagger-ui/index.html) or the [H2 database console](http://localhost:8080/h2-console/)
+
+### Testing the API
+1. The API can be tested by first running the UI, logging in and getting the access token
+(you can find this by opening the network tab and finding the response to the Auth0 login)
+2. Then use a tool like [Postman](https://www.postman.com/), set the authorisation to "Bearer Token" and paste the access token into the field
+3. Then configure the Postman request to point to the API endpoints you want to test
 
 ## Development server
 
