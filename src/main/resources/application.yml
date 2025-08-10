@@ -41,3 +41,9 @@ external:
             url: https://api.vensys.de:8443/api/v1.0
             tid: your_tid_here
             key: your_api_key_here
+
+site:
+  rates:
+    gf: 1.0
+  capacity:
+    gf: 100

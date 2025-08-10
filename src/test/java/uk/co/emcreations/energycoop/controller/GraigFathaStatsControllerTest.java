@@ -11,7 +11,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import uk.co.emcreations.energycoop.dto.VensysMeanData;
 import uk.co.emcreations.energycoop.dto.VensysPerformanceData;
-import uk.co.emcreations.energycoop.service.GraigFathaStatsServiceImpl;
+import uk.co.emcreations.energycoop.service.impl.GraigFathaStatsServiceImpl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;

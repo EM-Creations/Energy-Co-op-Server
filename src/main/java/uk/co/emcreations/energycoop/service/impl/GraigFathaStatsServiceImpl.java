@@ -1,4 +1,4 @@
-package uk.co.emcreations.energycoop.service;
+package uk.co.emcreations.energycoop.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.co.emcreations.energycoop.dto.VensysMeanData;
 import uk.co.emcreations.energycoop.dto.VensysPerformanceData;
+import uk.co.emcreations.energycoop.service.GraigFathaStatsService;
 import uk.co.emcreations.energycoop.sourceclient.VensysGraigFathaClient;
 
 import java.time.LocalDate;
