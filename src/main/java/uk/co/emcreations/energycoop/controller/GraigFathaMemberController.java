@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import uk.co.emcreations.energycoop.dto.EnergySaving;
 import uk.co.emcreations.energycoop.model.Site;
 import uk.co.emcreations.energycoop.security.HasGraigFathaStatsRead;
 import uk.co.emcreations.energycoop.service.GraigFathaMemberService;
@@ -24,7 +25,7 @@ public class GraigFathaMemberController {
     @HasGraigFathaStatsRead
     @GetMapping(name = "Today's Savings", value = "/todaySavings")
     @Operation(summary = "Today's Savings", description = "Returns this user's current savings today")
-    public double getTodaySavings(final Principal principal) {
+    public EnergySaving getTodaySavings(final Principal principal) {
         final EnumMap<Site, Double> ownerships = PrincipalHelper.extractOwnershipsFromPrincipal(principal);
 
         return graigFathaMemberService.getTodaySavings(ownerships.get(Site.GRAIG_FATHA));

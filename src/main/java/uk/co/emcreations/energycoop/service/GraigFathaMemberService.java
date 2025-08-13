@@ -1,5 +1,7 @@
 package uk.co.emcreations.energycoop.service;
 
+import uk.co.emcreations.energycoop.dto.EnergySaving;
+
 public interface GraigFathaMemberService {
-    double getTodaySavings(final double wattageOwnership);
+    EnergySaving getTodaySavings(final double wattageOwnership);
 }

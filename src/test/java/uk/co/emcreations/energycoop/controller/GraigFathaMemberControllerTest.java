@@ -8,7 +8,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import uk.co.emcreations.energycoop.dto.EnergySaving;
 import uk.co.emcreations.energycoop.service.GraigFathaMemberService;
+
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
@@ -28,7 +31,12 @@ class GraigFathaMemberControllerTest {
     @Test
     @DisplayName("GET /todaySavings returns servlet exception when principal is not set")
     void testGetTodaySavings() {
-        var expectedSavings = 100.0;
+        var expectedSavings = new EnergySaving(
+                100.0,
+                "GBP", // Assuming GBP as the currency, can be parameterized if needed
+                LocalDateTime.now(),
+                LocalDateTime.now()
+        );
         var wattageOwnership = 100.0;
 
         when(service.getTodaySavings(wattageOwnership)).thenReturn(expectedSavings);

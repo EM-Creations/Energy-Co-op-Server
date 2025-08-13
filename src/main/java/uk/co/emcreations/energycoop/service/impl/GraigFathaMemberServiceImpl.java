@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.co.emcreations.energycoop.dto.EnergySaving;
 import uk.co.emcreations.energycoop.dto.VensysMeanData;
 import uk.co.emcreations.energycoop.entity.GenerationStatEntry;
 import uk.co.emcreations.energycoop.entity.GenerationStatEntryRepository;
@@ -36,10 +37,14 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
     double totalCapacity;
 
     @Override
-    public double getTodaySavings(final double wattageOwnership) {
+    public EnergySaving getTodaySavings(final double wattageOwnership) {
         log.info("getTodaySavings() called with wattageOwnership: {}", wattageOwnership);
 
-        double todayGenerationSoFar = getGenerationForToday();
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
+
+        double todayGenerationSoFar = getGenerationBetweenTimes(startOfDay, endOfDay);
         log.info("Today's generation so far: {} watts", todayGenerationSoFar);
 
         double totalSavingsForToday = getSavings(todayGenerationSoFar);
@@ -50,16 +55,17 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
         double memberSavings = totalSavingsForToday * memberOwnershipPct;
         log.info("Calculated savings for this member today: {}", memberSavings);
 
-        return memberSavings;
+        return new EnergySaving(
+                memberSavings,
+                "GBP", // Assuming GBP as the currency, can be parameterized if needed
+                startOfDay,
+                endOfDay
+        );
     }
 
-    private double getGenerationForToday() {
-        LocalDate today = LocalDate.now();
-        LocalDateTime startOfDay = today.atStartOfDay();
-        LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
-
+    private double getGenerationBetweenTimes(final LocalDateTime start, final LocalDateTime end) {
         GenerationStatEntry todayGenerationSoFar =
-                generationStatEntryRepository.findFirstBySiteAndTimestampBetweenOrderByTimestampDesc(Site.GRAIG_FATHA, startOfDay, endOfDay);
+                generationStatEntryRepository.findFirstBySiteAndTimestampBetweenOrderByTimestampDesc(Site.GRAIG_FATHA, start, end);
 
         if (null != todayGenerationSoFar) { // If there's data for today, return it
             return todayGenerationSoFar.getWattsGenerated();
