@@ -1,49 +1,51 @@
 spring:
-    application:
-        name: energycoop
-    h2:
-        console:
-            enabled: true
-    threads:
-        virtual:
-            enabled: true
-    task:
-        scheduling:
-            pool:
-                size: 5
-    datasource:
-        url: jdbc:h2:~/test
-        username: sa
-        password:
-        driverClassName: org.h2.Driver
-    jpa:
-        database-platform: org.hibernate.dialect.H2Dialect
-        hibernate:
-            ddl-auto: update
+  application:
+    name: energycoop
+  h2:
+    console:
+      enabled: true
+  threads:
+    virtual:
+      enabled: true
+  task:
+    scheduling:
+      pool:
+        size: 5
+  datasource:
+    url: jdbc:h2:~/test
+    username: sa
+    password:
+    driverClassName: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
 
 scheduling:
-    graig-fatha:
-        schedule:
-            energy-yield: "0 */15 * * * *"
-            performance: "0 0 */6 * * *"
+  graig-fatha:
+    schedule:
+      energy-yield: "0 */15 * * * *"
+      performance: "0 0 */6 * * *"
 
 okta:
-    oauth2:
-        issuer: https://dev-energycoop.uk.auth0.com/
-        audience: http://localhost:8080/
-        client-id: your_client_id_here
-        client-secret: your_client_secret_here
-        groupsClaim: permissions
+  oauth2:
+    issuer: https://dev-energycoop.uk.auth0.com/
+    audience: http://localhost:8080/
+    client-id: your_client_id_here
+    client-secret: your_client_secret_here
+    groupsClaim: permissions
 
 external:
     api:
-        graig-fatha:
-            url: https://api.vensys.de:8443/api/v1.0
-            tid: your_tid_here
-            key: your_api_key_here
+      graig-fatha:
+        url: https://api.vensys.de:8443/api/v1.0
+        tid: your_tid_here
+        key: your_api_key_here
 
 site:
   rates:
     gf: 1.0
   capacity:
     gf: 100
+
+allowedOrigins: http://localhost:4200
