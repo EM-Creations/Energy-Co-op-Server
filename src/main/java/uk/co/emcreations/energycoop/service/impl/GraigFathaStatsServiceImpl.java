@@ -32,9 +32,19 @@ public class GraigFathaStatsServiceImpl implements GraigFathaStatsService {
     public VensysPerformanceData getYesterdayPerformance() {
         log.info("getYesterdayPerformance() called");
 
-        var from = LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MIDNIGHT).toEpochSecond(ZoneOffset.UTC);
-        var to = LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MAX).toEpochSecond(ZoneOffset.UTC);
+        var from = LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MIDNIGHT);
+        var to = LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MAX);
 
-        return client.getPerformance(from, to).data()[0];
+        return getPerformance(from, to);
+    }
+
+    @Override
+    public VensysPerformanceData getPerformance(final LocalDateTime from, final LocalDateTime to) {
+        log.info("getPerformance() called from: {}, to: {}", from, to);
+
+        var fromTimestamp = from.toEpochSecond(ZoneOffset.UTC);
+        var toTimestamp = to.toEpochSecond(ZoneOffset.UTC);
+
+        return client.getPerformance(fromTimestamp, toTimestamp).data()[0];
     }
 }

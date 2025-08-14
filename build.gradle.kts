@@ -39,6 +39,7 @@ dependencies {
 	implementation(libs.springDoc)
 	implementation(libs.logback)
 	implementation(libs.auth0)
+    implementation(libs.apache.commons.lang)
 
 	compileOnly("org.projectlombok:lombok")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
