@@ -1,6 +1,7 @@
 package uk.co.emcreations.energycoop.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import uk.co.emcreations.energycoop.dto.VensysPerformanceData;
 import uk.co.emcreations.energycoop.service.impl.GraigFathaStatsServiceImpl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -61,5 +63,43 @@ class GraigFathaStatsControllerTest {
         VensysPerformanceData actualEnergyYield = objectMapper.readValue(json, VensysPerformanceData.class);
 
         assertEquals(expectedYesterdayPerformance, actualEnergyYield);
+    }
+
+    @Test
+    @DisplayName("GET /energyYield throws error if service throws")
+    void testGetEnergyYield_serviceThrows() {
+        when(service.getMeanEnergyYield()).thenThrow(new RuntimeException("fail"));
+
+        assertThrows(ServletException.class, () -> {
+            mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/energyYield").with(oidcLogin()))
+                    .andExpect(status().is4xxClientError())
+                    .andReturn();
+        });
+    }
+
+    @Test
+    @DisplayName("GET /energyYield returns 200 OK with null response")
+    void testGetEnergyYield_nullResponse() throws Exception {
+        when(service.getMeanEnergyYield()).thenReturn(null);
+        mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/energyYield").with(oidcLogin()))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("GET /yesterdayPerformance throws error if service throws")
+    void testYesterdayPerformance_serviceThrows() throws Exception {
+        when(service.getYesterdayPerformance()).thenThrow(new RuntimeException("fail"));
+
+        mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/todaySavings").with(oidcLogin()))
+                .andExpect(status().is4xxClientError())
+                .andReturn();
+    }
+
+    @Test
+    @DisplayName("GET /yesterdayPerformance returns 200 OK with null response")
+    void testYesterdayPerformance_nullResponse() throws Exception {
+        when(service.getYesterdayPerformance()).thenReturn(null);
+        mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/yesterdayPerformance").with(oidcLogin()))
+                .andExpect(status().isOk());
     }
 }

@@ -10,4 +10,9 @@ class EnergycoopApplicationTests {
 	void contextLoads() {
 	}
 
+	@Test
+	void mainMethodRuns() {
+		EnergycoopApplication.main(new String[]{});
+	}
+
 }
