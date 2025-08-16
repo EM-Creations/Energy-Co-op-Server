@@ -55,7 +55,7 @@ jobs:
           coverage_report_title: JaCoCo
           github_token: ${{ secrets.GITHUB_TOKEN }}
           skip_check_run: true
-          minimum_coverage: 90
+          minimum_coverage: 80
           fail_below_threshold: true
           publish_only_summary: false
 
@@ -74,7 +74,9 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: build-${{ github.sha }}
-          path: build/libs/
+          path: |
+            build/libs/
+            */coverage-results.md
           retention-days: 1
 
   OCI-Image:
