@@ -92,6 +92,7 @@ jobs:
           path: |
             build/libs/
             */coverage-results.md
+          run: ls
 
       - name: Buildah Action
         id: build-image
