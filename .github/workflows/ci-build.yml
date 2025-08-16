@@ -63,8 +63,8 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: build-${{ github.sha }}
-      - run: ls -latr build/
-      - run: ls -latr
+      - run: ls build/
+      - run: ls
       - uses: PavanMudigonda/jacoco-reporter@v5.0
         with:
           coverage_results_path: build/reports/test/jacocoTestReport.xml
