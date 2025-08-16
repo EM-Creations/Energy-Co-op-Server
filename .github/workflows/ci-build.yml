@@ -45,27 +45,9 @@ jobs:
       - name: Build with Gradle Wrapper
         run: ./gradlew build
 
-      - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
-        with:
-          name: build-${{ github.sha }}
-          path: build/libs/
-          retention-days: 1
-
-  ### Start JaCoco-Code-Coverage-Report Job ###
-  JaCoCo-Code-Coverage-Report:
-    runs-on: windows-latest
-    needs:
-      - Build-With-Tests-Linux
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: build-${{ github.sha }}
-      - run: ls
-      - run: ls build/
-      - uses: PavanMudigonda/jacoco-reporter@v5.0
+        ### Start JaCoco-Code-Coverage-Report Job ###
+      - name: JaCoCo Code Coverage Report
+        uses: PavanMudigonda/jacoco-reporter@v5.0
         with:
           coverage_results_path: build/reports/test/jacocoTestReport.xml
           coverage_report_name: Code Coverage
@@ -76,20 +58,27 @@ jobs:
           fail_below_threshold: true
           publish_only_summary: false
 
-      # Publish Coverage Job Summary
-      - run: |
-          echo "| Outcome | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
-          echo "| Code Coverage % | ${{ steps.jacoco_reporter.outputs.coverage_percentage }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Number of Lines Covered | ${{ steps.jacoco_reporter.outputs.covered_lines }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Number of Lines Missed | ${{ steps.jacoco_reporter.outputs.missed_lines }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Total Number of Lines | ${{ steps.jacoco_reporter.outputs.total_lines }} |" >> $GITHUB_STEP_SUMMARY
-### End JaCoco-Code-Coverage-Report Job ###
+          # Publish Coverage Job Summary
+          run: |
+            echo "| Outcome | Value |" >> $GITHUB_STEP_SUMMARY
+            echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
+            echo "| Code Coverage % | ${{ steps.jacoco_reporter.outputs.coverage_percentage }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| Number of Lines Covered | ${{ steps.jacoco_reporter.outputs.covered_lines }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| Number of Lines Missed | ${{ steps.jacoco_reporter.outputs.missed_lines }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| Total Number of Lines | ${{ steps.jacoco_reporter.outputs.total_lines }} |" >> $GITHUB_STEP_SUMMARY
+      ### End JaCoco-Code-Coverage-Report Job ###
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: build-${{ github.sha }}
+          path: build/libs/
+          retention-days: 1
 
   OCI-Image:
     runs-on: ubuntu-latest
     needs:
-      - JaCoCo-Code-Coverage-Report
+      - Build-With-Tests-Linux
 
     steps:
       - uses: actions/checkout@v4
