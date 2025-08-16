@@ -94,7 +94,10 @@ jobs:
             */coverage-results.md
 
       - name: Debug
-        run: ls
+        run: |
+          ls
+          ls build/
+          ls build/libs/
 
       - name: Buildah Action
         id: build-image
