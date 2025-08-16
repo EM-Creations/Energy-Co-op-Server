@@ -1,5 +1,6 @@
 plugins {
 	java
+    jacoco
 	alias(libs.plugins.springBoot)
 	alias(libs.plugins.springDependencyManagement)
 	alias(libs.plugins.asciiDoctor)
@@ -22,6 +23,30 @@ configurations {
 
 repositories {
 	mavenCentral()
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification) // report is always generated after tests run
+}
+jacoco {
+    toolVersion = "0.8.13"
+    reportsDirectory = layout.buildDirectory.dir("reports")
+}
+tasks.jacocoTestReport {
+    dependsOn(tasks.test) // tests are required to run before generating the report
+    reports {
+        xml.required = true
+        csv.required = false
+    }
+}
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.8".toBigDecimal()
+            }
+        }
+    }
 }
 
 extra["snippetsDir"] = file("build/generated-snippets")
