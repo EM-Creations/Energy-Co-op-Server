@@ -93,15 +93,6 @@ jobs:
             build/libs/
 #            */coverage-results.md
 
-      - name: Debug
-        run: ls
-
-      - name: Debug 2
-        run: ls build/
-
-      - name: Debug 3
-        run: ls build/libs/
-
       - name: Buildah Action
         id: build-image
         uses: redhat-actions/buildah-build@v2
