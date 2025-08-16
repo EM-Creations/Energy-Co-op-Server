@@ -95,7 +95,11 @@ jobs:
 
       - name: Debug
         run: ls
+
+      - name: Debug 2
         run: ls build/
+
+      - name: Debug 3
         run: ls build/libs/
 
       - name: Buildah Action
