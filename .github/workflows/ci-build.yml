@@ -73,6 +73,8 @@ jobs:
           minimum_coverage: 80
           fail_below_threshold: true
           publish_only_summary: false
+      - run: ls -latr build/
+      - run: ls -latr
 
       # Publish Coverage Job Summary
       - run: |
