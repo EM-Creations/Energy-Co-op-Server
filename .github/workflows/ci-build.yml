@@ -76,7 +76,7 @@ jobs:
           name: build-${{ github.sha }}
           path: |
             build/libs/
-            */coverage-results.md
+#            */coverage-results.md
           retention-days: 1
 
   OCI-Image:
@@ -91,7 +91,7 @@ jobs:
           name: build-${{ github.sha }}
           path: |
             build/libs/
-            */coverage-results.md
+#            */coverage-results.md
 
       - name: Debug
         run: ls
