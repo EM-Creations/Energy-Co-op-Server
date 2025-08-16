@@ -92,7 +92,9 @@ jobs:
           path: |
             build/libs/
             */coverage-results.md
-          run: ls
+
+      - name: Debug
+        run: ls
 
       - name: Buildah Action
         id: build-image
