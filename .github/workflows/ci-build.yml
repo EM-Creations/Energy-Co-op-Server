@@ -63,6 +63,8 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: build-${{ github.sha }}
+      - run: ls -latr build/
+      - run: ls -latr
       - uses: PavanMudigonda/jacoco-reporter@v5.0
         with:
           coverage_results_path: build/reports/test/jacocoTestReport.xml
@@ -73,8 +75,6 @@ jobs:
           minimum_coverage: 80
           fail_below_threshold: true
           publish_only_summary: false
-      - run: ls -latr build/
-      - run: ls -latr
 
       # Publish Coverage Job Summary
       - run: |
