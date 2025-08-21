@@ -18,6 +18,7 @@ import uk.co.emcreations.energycoop.entity.GenerationStatEntryRepository;
 import uk.co.emcreations.energycoop.entity.PerformanceStatEntry;
 import uk.co.emcreations.energycoop.entity.PerformanceStatEntryRepository;
 import uk.co.emcreations.energycoop.service.GraigFathaStatsService;
+import uk.co.emcreations.energycoop.service.SavingsRateService;
 import uk.co.emcreations.energycoop.util.EntityHelper;
 
 import java.time.LocalDate;
@@ -33,15 +34,16 @@ class GraigFathaMemberServiceImplTest {
     @Mock GenerationStatEntryRepository generationStatEntryRepository;
     @Mock PerformanceStatEntryRepository performanceStatEntryRepository;
     @Mock GraigFathaStatsService graigFathaStatsService;
+    @Mock SavingsRateService savingsRateService;
     private MockedStatic<EntityHelper> entityHelperMock;
 
     @InjectMocks GraigFathaMemberServiceImpl service;
 
     @BeforeEach
     void setUp() {
-        service.savingsRatePerWatt = 1.0;
         service.totalCapacity = 100.0;
         entityHelperMock = mockStatic(EntityHelper.class);
+        when(savingsRateService.getSavingsRateForDate(any(), any())).thenReturn(1.0);
     }
 
     @AfterEach

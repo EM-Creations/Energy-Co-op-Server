@@ -15,7 +15,6 @@ import uk.co.emcreations.energycoop.entity.GenerationStatEntry;
 import uk.co.emcreations.energycoop.entity.GenerationStatEntryRepository;
 import uk.co.emcreations.energycoop.entity.PerformanceStatEntry;
 import uk.co.emcreations.energycoop.entity.PerformanceStatEntryRepository;
-import uk.co.emcreations.energycoop.model.Site;
 import uk.co.emcreations.energycoop.service.GraigFathaMemberService;
 import uk.co.emcreations.energycoop.service.GraigFathaStatsService;
 import uk.co.emcreations.energycoop.util.EntityHelper;
@@ -25,6 +24,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
+
+import static uk.co.emcreations.energycoop.model.Site.GRAIG_FATHA;
 
 @Slf4j
 @Service
@@ -36,9 +37,7 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
     private final GenerationStatEntryRepository generationStatEntryRepository;
     private final PerformanceStatEntryRepository performanceStatEntryRepository;
     private final GraigFathaStatsService graigFathaStatsService;
-
-    @Value("${site.rates.gf:1.0}")
-    double savingsRatePerWatt;
+    private final uk.co.emcreations.energycoop.service.SavingsRateService savingsRateService;
 
     @Value("${site.capacity.gf:100}")
     double totalCapacity;
@@ -47,16 +46,17 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
     public EnergySaving getTodaySavings(final double wattageOwnership) {
         log.info("getTodaySavings() called with wattageOwnership: {}", wattageOwnership);
 
-        Pair<LocalDateTime, LocalDateTime> todayStartAndEnd = getDayBounds(LocalDate.now());
+        LocalDate today = LocalDate.now();
+        Pair<LocalDateTime, LocalDateTime> todayStartAndEnd = getDayBounds(today);
 
         double todayGenerationSoFar = getGenerationBetweenTimes(todayStartAndEnd.getLeft(), todayStartAndEnd.getRight());
         log.info("Today's generation so far: {} watts", todayGenerationSoFar);
 
-        double totalSavingsForToday = getSavings(todayGenerationSoFar);
+        double savingsRate = savingsRateService.getSavingsRateForDate(GRAIG_FATHA, today);
+        double totalSavingsForToday = getSavings(todayGenerationSoFar, savingsRate);
         log.info("Calculated savings for the wind farm today: {}", totalSavingsForToday);
 
         double memberOwnershipPct = getOwnershipPercentage(wattageOwnership);
-
         double memberSavings = totalSavingsForToday * memberOwnershipPct;
         log.info("Calculated savings for this member today: {}", memberSavings);
 
@@ -80,7 +80,8 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
             Pair<LocalDateTime, LocalDateTime> todayStartAndEnd = getDayBounds(current);
 
             double generation = getHistoricalGenerationBetweenTimes(todayStartAndEnd.getLeft(), todayStartAndEnd.getRight());
-            double totalSavings = getSavings(generation);
+            double savingsRate = savingsRateService.getSavingsRateForDate(GRAIG_FATHA, current);
+            double totalSavings = getSavings(generation, savingsRate);
             double memberSavings = totalSavings * memberOwnershipPct;
 
             savingsSet.add(new EnergySaving(
@@ -104,14 +105,14 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
 
     private double getGenerationBetweenTimes(final LocalDateTime start, final LocalDateTime end) {
         GenerationStatEntry todayGenerationSoFar =
-                generationStatEntryRepository.findFirstBySiteAndTimestampBetweenOrderByTimestampDesc(Site.GRAIG_FATHA, start, end);
+                generationStatEntryRepository.findFirstBySiteAndTimestampBetweenOrderByTimestampDesc(GRAIG_FATHA, start, end);
 
         if (null != todayGenerationSoFar) { // If there's data for today, return it
             return todayGenerationSoFar.getWattsGenerated();
         } else { // if there's no data for today, fetch it and store it
             VensysMeanData energyYield = graigFathaStatsService.getMeanEnergyYield();
 
-            GenerationStatEntry statEntry = EntityHelper.createGenerationStatEntry(energyYield, Site.GRAIG_FATHA);
+            GenerationStatEntry statEntry = EntityHelper.createGenerationStatEntry(energyYield, GRAIG_FATHA);
             entityManager.persist(statEntry);
 
             return statEntry.getWattsGenerated();
@@ -120,14 +121,14 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
 
     private double getHistoricalGenerationBetweenTimes(final LocalDateTime start, final LocalDateTime end) {
         PerformanceStatEntry generationOnDay =
-                performanceStatEntryRepository.findFirstBySiteAndForDateBetweenOrderByTimestampDesc(Site.GRAIG_FATHA, start, end);
+                performanceStatEntryRepository.findFirstBySiteAndForDateBetweenOrderByTimestampDesc(GRAIG_FATHA, start, end);
 
         if (null != generationOnDay) { // If there's data for this day, return it
             return generationOnDay.getWattsGenerated();
         } else { // if there's no data for this day, fetch it and store it
             VensysPerformanceData performanceData = graigFathaStatsService.getPerformance(start, end);
 
-            PerformanceStatEntry statEntry = EntityHelper.createPerformanceStatEntry(performanceData, Site.GRAIG_FATHA);
+            PerformanceStatEntry statEntry = EntityHelper.createPerformanceStatEntry(performanceData, GRAIG_FATHA);
             entityManager.persist(statEntry);
 
             return statEntry.getWattsGenerated();
@@ -140,11 +141,11 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
         return Pair.of(startOfDay, endOfDay);
     }
 
-    private double getSavings(double generationWattage) {
-        return generationWattage * savingsRatePerWatt;
+    private double getSavings(final double generationWattage, final double savingsRate) {
+        return generationWattage * savingsRate;
     }
 
-    private double getOwnershipPercentage(double wattageOwnership) {
+    private double getOwnershipPercentage(final double wattageOwnership) {
         return wattageOwnership / totalCapacity;
     }
 }
