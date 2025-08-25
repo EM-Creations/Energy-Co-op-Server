@@ -11,7 +11,7 @@ auth0Version = "3.0.7"
 apacheCommonsVersion = "3.18.0"
 
 # Plugin versions
-springBootVersion = "3.5.4"
+springBootVersion = "3.5.5"
 
 springDependencyManagementVersion = "1.1.7"
 
