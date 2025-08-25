@@ -30,14 +30,14 @@ public class SavingsRateServiceImpl implements SavingsRateService {
     public double getSavingsRateForDate(final Site site, final LocalDate date) {
         double savingsRate = savingsRateRepository
                 .findTopBySiteAndEffectiveDateLessThanEqualOrderByEffectiveDateDesc(site, date)
-                .map(SavingsRate::getRatePerW)
+                .map(SavingsRate::getRatePerKWH)
                 .orElseGet(() -> switch (site) {
                     case GRAIG_FATHA -> defaultSavingsRatePerWattGraigFatha;
                     case KIRK_HILL -> defaultSavingsRatePerWattKirkHill;
                     case DERRIL_WATER -> defaultSavingsRatePerWattDerrilWater;
                 });
 
-        log.debug("Retrieved savings rate for site {} on date {}: {}", site, date, savingsRate);
+        log.debug("Retrieved savings rate for site {} on date {}: {} per kWh", site, date, savingsRate);
 
         return savingsRate;
     }

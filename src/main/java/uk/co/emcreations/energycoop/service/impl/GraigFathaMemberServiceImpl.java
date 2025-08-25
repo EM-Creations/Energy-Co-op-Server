@@ -141,8 +141,8 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
         return Pair.of(startOfDay, endOfDay);
     }
 
-    private double getSavings(final double generationWattage, final double savingsRate) {
-        return generationWattage * savingsRate;
+    private double getSavings(final double generationKWH, final double savingsRate) {
+        return generationKWH * savingsRate;
     }
 
     private double getOwnershipPercentage(final double wattageOwnership) {

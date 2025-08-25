@@ -45,7 +45,7 @@ class SavingsRateServiceTest {
     void returnsRepositoryRateIfPresent() {
         LocalDate date = LocalDate.of(2024, 1, 1);
         SavingsRate rate = mock(SavingsRate.class);
-        when(rate.getRatePerW()).thenReturn(9.99);
+        when(rate.getRatePerKWH()).thenReturn(9.99);
         when(savingsRateRepository.findTopBySiteAndEffectiveDateLessThanEqualOrderByEffectiveDateDesc(Site.GRAIG_FATHA, date))
                 .thenReturn(Optional.of(rate));
         double result = savingsRateService.getSavingsRateForDate(Site.GRAIG_FATHA, date);

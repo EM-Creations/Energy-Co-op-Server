@@ -20,18 +20,18 @@ public class PrincipalHelper {
         Map<String, Object> attributes = token.getTokenAttributes();
 
         Object ownershipsObj = attributes.get("ownerships");
-        Map<String, Long> ownershipsFromToken = new HashMap<>();
+        Map<String, Double> ownershipsFromToken = new HashMap<>();
         if (ownershipsObj instanceof Map<?, ?>) {
             ((Map<?, ?>) ownershipsObj).forEach((key, value) -> {
                 if (key instanceof String && value instanceof Number) {
-                    ownershipsFromToken.put((String) key, ((Number) value).longValue());
+                    ownershipsFromToken.put((String) key, ((Number) value).doubleValue());
                 }
             });
         }
 
         Arrays.stream(Site.values()).forEach(site -> {
-            Long siteOwnership = ownershipsFromToken.getOrDefault(site.getOwnershipKey(), 0L);
-            siteOwnerships.put(site, siteOwnership.doubleValue());
+            double siteOwnership = ownershipsFromToken.getOrDefault(site.getOwnershipKey(), 0.0);
+            siteOwnerships.put(site, siteOwnership);
         });
 
         return siteOwnerships;

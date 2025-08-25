@@ -24,7 +24,7 @@ public class SavingsRate implements Serializable {
     private Site site;
 
     @Column(nullable = false)
-    private double ratePerW;
+    private double ratePerKWH;
 
     @Column(nullable = false)
     private LocalDate effectiveDate;
