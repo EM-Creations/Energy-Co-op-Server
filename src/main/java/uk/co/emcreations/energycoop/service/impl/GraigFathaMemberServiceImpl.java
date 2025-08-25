@@ -17,6 +17,8 @@ import uk.co.emcreations.energycoop.entity.PerformanceStatEntry;
 import uk.co.emcreations.energycoop.entity.PerformanceStatEntryRepository;
 import uk.co.emcreations.energycoop.service.GraigFathaMemberService;
 import uk.co.emcreations.energycoop.service.GraigFathaStatsService;
+import uk.co.emcreations.energycoop.service.MemberOwnershipService;
+import uk.co.emcreations.energycoop.service.SavingsRateService;
 import uk.co.emcreations.energycoop.util.EntityHelper;
 
 import java.time.LocalDate;
@@ -37,7 +39,8 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
     private final GenerationStatEntryRepository generationStatEntryRepository;
     private final PerformanceStatEntryRepository performanceStatEntryRepository;
     private final GraigFathaStatsService graigFathaStatsService;
-    private final uk.co.emcreations.energycoop.service.SavingsRateService savingsRateService;
+    private final SavingsRateService savingsRateService;
+    private final MemberOwnershipService memberOwnershipService;
 
     @Value("${site.capacity.gf:100}")
     double totalCapacity;
@@ -69,10 +72,10 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
     }
 
     @Override
-    public Set<EnergySaving> getSavings(final LocalDate from, final LocalDate to, final double wattageOwnership) {
-        log.info("getSavings() called with from: {}, to: {} and wattageOwnership: {}", from, to, wattageOwnership);
-
-        double memberOwnershipPct = getOwnershipPercentage(wattageOwnership);
+    public Set<EnergySaving> getSavings(final LocalDate from, final LocalDate to, final double suppliedOwnershipWattage,
+                                        final String userId) {
+        log.info("getSavings() called with from: {}, to: {}, suppliedOwnershipWattage: {} and user: {}",
+                from, to, suppliedOwnershipWattage, userId);
 
         Set<EnergySaving> savingsSet = new HashSet<>();
         LocalDate current = from;
@@ -82,6 +85,9 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
             double generation = getHistoricalGenerationBetweenTimes(todayStartAndEnd.getLeft(), todayStartAndEnd.getRight());
             double savingsRate = savingsRateService.getSavingsRateForDate(GRAIG_FATHA, current);
             double totalSavings = getSavings(generation, savingsRate);
+            double ownershipWattage = memberOwnershipService.getMemberOwnershipForSite(GRAIG_FATHA, current, userId,
+                    suppliedOwnershipWattage);
+            double memberOwnershipPct = getOwnershipPercentage(ownershipWattage);
             double memberSavings = totalSavings * memberOwnershipPct;
 
             savingsSet.add(new EnergySaving(
@@ -98,7 +104,7 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
                 .mapToDouble(EnergySaving::amount)
                 .sum();
 
-        log.info("Calculated savings for this member between: {} and {} = {}", from, to, totalSavings);
+        log.info("Calculated savings for {} member between: {} and {} = {}", userId, from, to, totalSavings);
 
         return savingsSet;
     }

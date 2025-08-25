@@ -10,11 +10,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PrincipalHelper {
+    private static final String PRINCIPAL_NOT_VALID_MESSAGE = "Principal must be a JwtAuthenticationToken";
+
     public static EnumMap<Site, Double> extractOwnershipsFromPrincipal(final Principal principal) {
         EnumMap<Site, Double> siteOwnerships = new EnumMap<>(Site.class);
 
         if (!(principal instanceof JwtAuthenticationToken token)) {
-            throw new IllegalArgumentException("Principal must be a JwtAuthenticationToken");
+            throw new IllegalArgumentException(PRINCIPAL_NOT_VALID_MESSAGE);
         }
 
         Map<String, Object> attributes = token.getTokenAttributes();
@@ -35,6 +37,26 @@ public class PrincipalHelper {
         });
 
         return siteOwnerships;
+    }
+
+    public static String extractUserFromPrincipal(final Principal principal) {
+        if (!(principal instanceof JwtAuthenticationToken token)) {
+            throw new IllegalArgumentException(PRINCIPAL_NOT_VALID_MESSAGE);
+        }
+
+        String userId = token.getName();
+        if (null == userId || userId.isEmpty()) {
+            Map<String, Object> attributes = token.getTokenAttributes();
+
+            Object subjectObj = attributes.get("sub");
+            if (subjectObj instanceof String subject) {
+                userId = subject;
+            } else {
+                throw new IllegalArgumentException("User ID attribute is missing or not a string");
+            }
+        }
+
+        return userId;
     }
 
 }

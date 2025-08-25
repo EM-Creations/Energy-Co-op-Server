@@ -98,7 +98,7 @@ class GraigFathaMemberControllerTest {
         EnumMap<Site, Double> ownerships = new EnumMap<>(Site.class);
         ownerships.put(Site.GRAIG_FATHA, 50.0);
         Set<EnergySaving> expectedSet = Set.of(new EnergySaving(50.0, "GBP", LocalDateTime.now(), LocalDateTime.now()));
-        when(service.getSavings(any(LocalDate.class), any(LocalDate.class), eq(50.0))).thenReturn(expectedSet);
+        when(service.getSavings(any(LocalDate.class), any(LocalDate.class), eq(50.0), anyString())).thenReturn(expectedSet);
         mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/savings/2023-01-01/2023-01-02").with(oidcLogin()).principal(principal))
                 .andExpect(status().isOk());
     }

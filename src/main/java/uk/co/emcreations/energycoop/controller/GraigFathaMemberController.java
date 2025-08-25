@@ -42,7 +42,8 @@ public class GraigFathaMemberController {
                                         @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate to,
                                         final Principal principal) {
         final EnumMap<Site, Double> ownerships = PrincipalHelper.extractOwnershipsFromPrincipal(principal);
+        String userId =  PrincipalHelper.extractUserFromPrincipal(principal);
 
-        return graigFathaMemberService.getSavings(from, to, ownerships.get(Site.GRAIG_FATHA));
+        return graigFathaMemberService.getSavings(from, to, ownerships.get(Site.GRAIG_FATHA), userId);
     }
 }
