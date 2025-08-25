@@ -10,7 +10,7 @@ public class EntityHelper {
     public static GenerationStatEntry createGenerationStatEntry(final VensysMeanData energyYield, final Site site) {
         var statEntry = new GenerationStatEntry();
         statEntry.setSite(site);
-        statEntry.setWattsGenerated(energyYield.value());
+        statEntry.setKWhGenerated(energyYield.value());
         return statEntry;
     }
 
@@ -18,7 +18,7 @@ public class EntityHelper {
         var statEntry = new PerformanceStatEntry();
         statEntry.setSite(site);
         statEntry.setForDate(performanceData.date());
-        statEntry.setWattsGenerated(performanceData.energyYield());
+        statEntry.setKWhGenerated(performanceData.energyYield());
         statEntry.setAvailability(performanceData.availability());
         statEntry.setAveragePower(performanceData.powerAvg());
         statEntry.setMaxPower(performanceData.powerMax());

@@ -56,7 +56,7 @@ class GraigFathaMemberServiceImplTest {
     @DisplayName("getTodaySavings returns correct savings when repository has data")
     void testGetTodaySavings_withRepoData() {
         GenerationStatEntry entry = mock(GenerationStatEntry.class);
-        when(entry.getWattsGenerated()).thenReturn(50.0);
+        when(entry.getKWhGenerated()).thenReturn(50.0);
         when(generationStatEntryRepository.findFirstBySiteAndTimestampBetweenOrderByTimestampDesc(any(), any(), any())).thenReturn(entry);
         double wattageOwnership = 10.0;
         EnergySaving saving = service.getTodaySavings(wattageOwnership);
@@ -71,7 +71,7 @@ class GraigFathaMemberServiceImplTest {
         VensysMeanData meanData = VensysMeanData.builder().value(60.0).build();
         when(graigFathaStatsService.getMeanEnergyYield()).thenReturn(meanData);
         GenerationStatEntry statEntry = mock(GenerationStatEntry.class);
-        when(statEntry.getWattsGenerated()).thenReturn(60.0);
+        when(statEntry.getKWhGenerated()).thenReturn(60.0);
         entityHelperMock.when(() -> EntityHelper.createGenerationStatEntry(any(), any())).thenReturn(statEntry);
         double wattageOwnership = 20.0;
         EnergySaving saving = service.getTodaySavings(wattageOwnership);
@@ -83,7 +83,7 @@ class GraigFathaMemberServiceImplTest {
     @DisplayName("getSavings returns correct savings for multiple days with repo data")
     void testGetSavings_withRepoData() {
         PerformanceStatEntry entry = mock(PerformanceStatEntry.class);
-        when(entry.getWattsGenerated()).thenReturn(100.0);
+        when(entry.getKWhGenerated()).thenReturn(100.0);
         when(performanceStatEntryRepository.findFirstBySiteAndForDateBetweenOrderByTimestampDesc(any(), any(), any())).thenReturn(entry);
         double wattageOwnership = 10.0;
         LocalDate from = LocalDate.now().minusDays(2);
@@ -103,7 +103,7 @@ class GraigFathaMemberServiceImplTest {
         VensysPerformanceData perfData = VensysPerformanceData.builder().powerAvg(200.0).build();
         when(graigFathaStatsService.getPerformance(any(), any())).thenReturn(perfData);
         PerformanceStatEntry statEntry = mock(PerformanceStatEntry.class);
-        when(statEntry.getWattsGenerated()).thenReturn(200.0);
+        when(statEntry.getKWhGenerated()).thenReturn(200.0);
         entityHelperMock.when(() -> EntityHelper.createPerformanceStatEntry(any(), any())).thenReturn(statEntry);
         double wattageOwnership = 50.0;
         LocalDate from = LocalDate.now();
@@ -119,7 +119,7 @@ class GraigFathaMemberServiceImplTest {
     @DisplayName("getTodaySavings returns zero for zero ownership")
     void testGetTodaySavings_zeroOwnership() {
         GenerationStatEntry entry = mock(GenerationStatEntry.class);
-        when(entry.getWattsGenerated()).thenReturn(100.0);
+        when(entry.getKWhGenerated()).thenReturn(100.0);
         when(generationStatEntryRepository.findFirstBySiteAndTimestampBetweenOrderByTimestampDesc(any(), any(), any())).thenReturn(entry);
         double wattageOwnership = 0.0;
         EnergySaving saving = service.getTodaySavings(wattageOwnership);
@@ -130,7 +130,7 @@ class GraigFathaMemberServiceImplTest {
     @DisplayName("getTodaySavings handles negative ownership")
     void testGetTodaySavings_negativeOwnership() {
         GenerationStatEntry entry = mock(GenerationStatEntry.class);
-        when(entry.getWattsGenerated()).thenReturn(100.0);
+        when(entry.getKWhGenerated()).thenReturn(100.0);
         when(generationStatEntryRepository.findFirstBySiteAndTimestampBetweenOrderByTimestampDesc(any(), any(), any())).thenReturn(entry);
         double wattageOwnership = -10.0;
         EnergySaving saving = service.getTodaySavings(wattageOwnership);

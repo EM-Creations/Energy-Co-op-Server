@@ -23,5 +23,5 @@ public class GenerationStatEntry implements Serializable {
     private Site site;
 
     @Column(nullable = false)
-    private double wattsGenerated;
+    private double kWhGenerated;
 }

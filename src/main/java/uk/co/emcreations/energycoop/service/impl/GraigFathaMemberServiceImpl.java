@@ -50,7 +50,7 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
         Pair<LocalDateTime, LocalDateTime> todayStartAndEnd = getDayBounds(today);
 
         double todayGenerationSoFar = getGenerationBetweenTimes(todayStartAndEnd.getLeft(), todayStartAndEnd.getRight());
-        log.info("Today's generation so far: {} watts", todayGenerationSoFar);
+        log.info("Today's generation so far: {} kWh", todayGenerationSoFar);
 
         double savingsRate = savingsRateService.getSavingsRateForDate(GRAIG_FATHA, today);
         double totalSavingsForToday = getSavings(todayGenerationSoFar, savingsRate);
@@ -108,14 +108,14 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
                 generationStatEntryRepository.findFirstBySiteAndTimestampBetweenOrderByTimestampDesc(GRAIG_FATHA, start, end);
 
         if (null != todayGenerationSoFar) { // If there's data for today, return it
-            return todayGenerationSoFar.getWattsGenerated();
+            return todayGenerationSoFar.getKWhGenerated();
         } else { // if there's no data for today, fetch it and store it
             VensysMeanData energyYield = graigFathaStatsService.getMeanEnergyYield();
 
             GenerationStatEntry statEntry = EntityHelper.createGenerationStatEntry(energyYield, GRAIG_FATHA);
             entityManager.persist(statEntry);
 
-            return statEntry.getWattsGenerated();
+            return statEntry.getKWhGenerated();
         }
     }
 
@@ -124,14 +124,14 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
                 performanceStatEntryRepository.findFirstBySiteAndForDateBetweenOrderByTimestampDesc(GRAIG_FATHA, start, end);
 
         if (null != generationOnDay) { // If there's data for this day, return it
-            return generationOnDay.getWattsGenerated();
+            return generationOnDay.getKWhGenerated();
         } else { // if there's no data for this day, fetch it and store it
             VensysPerformanceData performanceData = graigFathaStatsService.getPerformance(start, end);
 
             PerformanceStatEntry statEntry = EntityHelper.createPerformanceStatEntry(performanceData, GRAIG_FATHA);
             entityManager.persist(statEntry);
 
-            return statEntry.getWattsGenerated();
+            return statEntry.getKWhGenerated();
         }
     }
 

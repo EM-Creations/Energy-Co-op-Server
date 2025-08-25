@@ -19,7 +19,7 @@ class EntityHelperTest {
         VensysMeanData meanData = VensysMeanData.builder().value(123.45).build();
         GenerationStatEntry entry = EntityHelper.createGenerationStatEntry(meanData, Site.GRAIG_FATHA);
         assertEquals(Site.GRAIG_FATHA, entry.getSite());
-        assertEquals(123.45, entry.getWattsGenerated());
+        assertEquals(123.45, entry.getKWhGenerated());
     }
 
     @Test
@@ -47,7 +47,7 @@ class EntityHelperTest {
         PerformanceStatEntry entry = EntityHelper.createPerformanceStatEntry(perfData, Site.GRAIG_FATHA);
         assertEquals(Site.GRAIG_FATHA, entry.getSite());
         assertEquals(now, entry.getForDate());
-        assertEquals(10.0, entry.getWattsGenerated());
+        assertEquals(10.0, entry.getKWhGenerated());
         assertEquals(99.9, entry.getAvailability());
         assertEquals(5.5, entry.getAveragePower());
         assertEquals(8.8, entry.getMaxPower());

@@ -26,7 +26,7 @@ public class PerformanceStatEntry implements Serializable {
     private LocalDateTime forDate;
 
     @Column(nullable = false)
-    private double wattsGenerated;
+    private double kWhGenerated;
 
     @Column(nullable = false)
     private double availability;
