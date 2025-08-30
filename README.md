@@ -81,6 +81,7 @@ Energy Co-op Server is intended to be a Spring Boot server backend to facilitate
 ### Prerequisites
 
 * Java JDK 21+
+* PostgreSQL 17+ database
 * Vensys API keys
 * Auth0 account
 * [UI Project setup](https://github.com/EM-Creations/Energy-Co-op-UI)

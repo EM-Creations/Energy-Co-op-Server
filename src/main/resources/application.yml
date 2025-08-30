@@ -1,9 +1,6 @@
 spring:
   application:
     name: energycoop
-  h2:
-    console:
-      enabled: true
   threads:
     virtual:
       enabled: true
@@ -12,14 +9,18 @@ spring:
       pool:
         size: 5
   datasource:
-    url: jdbc:h2:~/test
-    username: sa
-    password:
-    driverClassName: org.h2.Driver
+    url: jdbc:postgresql://localhost/postgres
+    username: your_postgresql_username_here
+    password: your_postgresql_password_here
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
     hibernate:
       ddl-auto: update
+      naming:
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
 
 scheduling:
   graig-fatha:
