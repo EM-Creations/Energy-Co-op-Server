@@ -9,9 +9,9 @@ spring:
       pool:
         size: 5
   datasource:
-    url: jdbc:postgresql://localhost/postgres
-    username: your_postgresql_username_here
-    password: your_postgresql_password_here
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
   jpa:
     show-sql: false
     properties:
@@ -30,23 +30,23 @@ scheduling:
 
 okta:
   oauth2:
-    issuer: https://dev-energycoop.uk.auth0.com/
-    audience: http://localhost:8080/
-    client-id: your_client_id_here
-    client-secret: your_client_secret_here
+    issuer: ${AUTH0_ISSUER}
+    audience: ${AUTH0_AUDIENCE}
+    client-id: ${AUTH0_CLIENT_ID}
+    client-secret: ${AUTH0_SECRET}
     groupsClaim: permissions
 
 external:
-    api:
-      graig-fatha:
-        url: https://api.vensys.de:8443/api/v1.0
-        tid: your_tid_here
-        key: your_api_key_here
+  api:
+    graig-fatha:
+      url: ${API_GRAIG_FATHA_URL}
+      tid: ${API_GRAIG_FATHA_TID}
+      key: ${API_GRAIG_FATHA_KEY}
 
 site:
   rates:
-    gf: 1.0
+    gf: ${SITE_RATES_GF}
   capacity:
-    gf: 100
+    gf: ${SITE_CAPACITY_GF}
 
 allowedOrigins: http://localhost:4200
