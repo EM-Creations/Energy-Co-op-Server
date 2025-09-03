@@ -20,7 +20,7 @@ env:
   IMAGE_NAME: energycoop-server
   IMAGE_TAGS: v1 latest ${{ github.sha }}
   IMAGE_REGISTRY: ghcr.io/${{ github.repository }}
-  IMAGE_REGISTRY_DOCKERHUB: docker.io/statusred/${{ github.repository }}
+  IMAGE_REGISTRY_DOCKERHUB: docker.io/statusred/${{ env.IMAGE_NAME }}
   REGISTRY_USER: ${{ github.actor }}
   REGISTRY_PASSWORD: ${{ github.token }}
 
