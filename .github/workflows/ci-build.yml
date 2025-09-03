@@ -20,7 +20,7 @@ env:
   IMAGE_NAME: energycoop-server
   IMAGE_TAGS: v1 latest ${{ github.sha }}
   IMAGE_REGISTRY: ghcr.io/${{ github.repository }}
-  IMAGE_REGISTRY_DOCKERHUB: docker.io/statusred/energycoop-server
+  IMAGE_REGISTRY_DOCKERHUB: docker.io/statusred
   REGISTRY_USER: ${{ github.actor }}
   REGISTRY_PASSWORD: ${{ github.token }}
 
@@ -142,8 +142,8 @@ jobs:
           image: ${{ steps.build-image-dockerhub.outputs.image }}
           tags: ${{ steps.build-image-dockerhub.outputs.tags }}
           registry: ${{ env.IMAGE_REGISTRY_DOCKERHUB }}
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Print image url (DOCKERHUB)
         run: echo "Image pushed to ${{ steps.push-to-dockerhub.outputs.registry-paths }}"
