@@ -19,7 +19,7 @@ permissions:
 env:
   IMAGE_NAME: energycoop-server
   IMAGE_TAGS: v1 latest ${{ github.sha }}
-  IMAGE_REGISTRY: ghcr.io/${{ github.repository }}
+  IMAGE_REGISTRY_GHCR: ghcr.io/${{ github.repository }}
   IMAGE_REGISTRY_DOCKERHUB: docker.io/statusred
   REGISTRY_USER: ${{ github.actor }}
   REGISTRY_PASSWORD: ${{ github.token }}
@@ -94,6 +94,7 @@ jobs:
             build/libs/
 #            */coverage-results.md
 
+# Build GitHub Container Registry (GHCR) image and push to registry
       - name: Buildah Action (GHCR)
         id: build-image-ghcr
         uses: redhat-actions/buildah-build@v2
@@ -104,9 +105,9 @@ jobs:
           containerfiles: |
             ./Containerfile
 
-      - name: downcase IMAGE_REGISTRY
+      - name: downcase IMAGE_REGISTRY_GHCR
         run: |
-          echo "IMAGE_REGISTRY=${IMAGE_REGISTRY,,}" >>${GITHUB_ENV}
+          echo "IMAGE_REGISTRY_GHCR=${IMAGE_REGISTRY_GHCR,,}" >>${GITHUB_ENV}
 
       - name: Push to GitHub Container Registry
         id: push-to-ghcr
@@ -114,13 +115,14 @@ jobs:
         with:
           image: ${{ steps.build-image-ghcr.outputs.image }}
           tags: ${{ steps.build-image-ghcr.outputs.tags }}
-          registry: ${{ env.IMAGE_REGISTRY }}
+          registry: ${{ env.IMAGE_REGISTRY_GHCR }}
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
       - name: Print image url (GHCR)
         run: echo "Image pushed to ${{ steps.push-to-ghcr.outputs.registry-paths }}"
 
+  # Build Docker Hub image and push to registry
       - name: Buildah Action (DockerHub)
         id: build-image-dockerhub
         uses: redhat-actions/buildah-build@v2
@@ -130,10 +132,6 @@ jobs:
           oci: true
           containerfiles: |
             ./Containerfile
-
-#      - name: downcase IMAGE_REGISTRY_DOCKERHUB
-#        run: |
-#          echo "IMAGE_REGISTRY_DOCKERHUB=${IMAGE_REGISTRY_DOCKERHUB,,}" >>${GITHUB_ENV}
 
       - name: Push to Docker Hub
         id: push-to-dockerhub
