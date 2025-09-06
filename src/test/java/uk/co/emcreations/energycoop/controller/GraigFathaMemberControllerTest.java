@@ -64,6 +64,7 @@ class GraigFathaMemberControllerTest {
         var expectedSavings = new EnergySaving(
                 100.0,
                 "GBP", // Assuming GBP as the currency, can be parameterized if needed
+                1.0,
                 LocalDateTime.now(),
                 LocalDateTime.now()
         );
@@ -85,7 +86,7 @@ class GraigFathaMemberControllerTest {
     void testGetTodaySavings_success() throws Exception {
         Principal principal = mock(Principal.class);
 
-        var expectedSavings = new EnergySaving(100.0, "GBP", LocalDateTime.now(), LocalDateTime.now());
+        var expectedSavings = new EnergySaving(100.0, "GBP", 1.0, LocalDateTime.now(), LocalDateTime.now());
         when(service.getTodaySavings(100.0)).thenReturn(expectedSavings);
         mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/todaySavings").with(oidcLogin()).principal(principal))
                 .andExpect(status().isOk());
@@ -97,7 +98,7 @@ class GraigFathaMemberControllerTest {
         Principal principal = mock(Principal.class);
         EnumMap<Site, Double> ownerships = new EnumMap<>(Site.class);
         ownerships.put(Site.GRAIG_FATHA, 50.0);
-        Set<EnergySaving> expectedSet = Set.of(new EnergySaving(50.0, "GBP", LocalDateTime.now(), LocalDateTime.now()));
+        Set<EnergySaving> expectedSet = Set.of(new EnergySaving(50.0, "GBP", 1.0, LocalDateTime.now(), LocalDateTime.now()));
         when(service.getSavings(any(LocalDate.class), any(LocalDate.class), eq(50.0), anyString())).thenReturn(expectedSet);
         mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/savings/2023-01-01/2023-01-02").with(oidcLogin()).principal(principal))
                 .andExpect(status().isOk());
