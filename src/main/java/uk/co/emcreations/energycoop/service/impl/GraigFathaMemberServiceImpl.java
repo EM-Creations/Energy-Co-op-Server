@@ -66,6 +66,7 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
         return new EnergySaving(
                 memberSavings,
                 "GBP", // Assuming GBP as the currency, can be parameterized if needed
+                savingsRate,
                 todayStartAndEnd.getLeft(),
                 todayStartAndEnd.getRight()
         );
@@ -93,6 +94,7 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
             savingsSet.add(new EnergySaving(
                     memberSavings,
                     "GBP",
+                    savingsRate,
                     todayStartAndEnd.getLeft(),
                     todayStartAndEnd.getRight()
             ));
