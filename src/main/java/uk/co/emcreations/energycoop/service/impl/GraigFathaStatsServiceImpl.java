@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.co.emcreations.energycoop.dto.VensysMeanData;
+import uk.co.emcreations.energycoop.dto.VensysMeanDataResponse;
 import uk.co.emcreations.energycoop.dto.VensysPerformanceData;
 import uk.co.emcreations.energycoop.service.GraigFathaStatsService;
 import uk.co.emcreations.energycoop.sourceclient.VensysGraigFathaClient;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -25,7 +27,14 @@ public class GraigFathaStatsServiceImpl implements GraigFathaStatsService {
     public VensysMeanData getMeanEnergyYield() {
         log.info("getEnergyYield() called");
 
-        return client.getMeanEnergyYield().data();
+        VensysMeanDataResponse meanDataResponse = client.getMeanEnergyYield();
+        Optional<VensysMeanData> meanDataOptional = Optional.ofNullable(meanDataResponse.data());
+
+        return meanDataOptional.orElseGet(() -> {
+            log.warn("No mean energy yield data available from client, falling back to current performance data.");
+            VensysPerformanceData currentPerformance = getCurrentPerformance();
+            return VensysMeanData.builder().value(currentPerformance.energyYield()).build();
+        });
     }
 
     @Override
@@ -46,5 +55,11 @@ public class GraigFathaStatsServiceImpl implements GraigFathaStatsService {
         var toTimestamp = to.toEpochSecond(ZoneOffset.UTC);
 
         return client.getPerformance(fromTimestamp, toTimestamp).data()[0];
+    }
+
+    private VensysPerformanceData getCurrentPerformance() {
+        log.info("getCurrentPerformance() called");
+
+        return client.getCurrentPerformance().data()[0];
     }
 }

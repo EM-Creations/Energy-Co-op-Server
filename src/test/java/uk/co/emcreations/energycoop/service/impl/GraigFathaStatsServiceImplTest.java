@@ -1,6 +1,7 @@
 package uk.co.emcreations.energycoop.service.impl;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,50 +18,133 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class GraigFathaStatsServiceImplTest {
-    @Mock VensysGraigFathaClient client;
-    @InjectMocks GraigFathaStatsServiceImpl service;
+    @Mock
+    private VensysGraigFathaClient client;
 
-    @Test
-    @DisplayName("getMeanEnergyYield delegates to client and returns data")
-    void testGetMeanEnergyYield() {
-        VensysMeanData meanData = VensysMeanData.builder().value(123.0).build();
-        VensysMeanDataResponse response = mock(VensysMeanDataResponse.class);
-        when(response.data()).thenReturn(meanData);
-        when(client.getMeanEnergyYield()).thenReturn(response);
-        VensysMeanData result = service.getMeanEnergyYield();
-        assertEquals(meanData, result);
-        verify(client).getMeanEnergyYield();
+    @InjectMocks
+    private GraigFathaStatsServiceImpl service;
+
+    @Nested
+    @DisplayName("getMeanEnergyYield tests")
+    class GetMeanEnergyYieldTests {
+        @Test
+        @DisplayName("Returns data from client successfully")
+        void getMeanEnergyYield_returnsData() {
+            var meanData = VensysMeanData.builder().value(123.0).build();
+            VensysMeanDataResponse response = mock(VensysMeanDataResponse.class);
+            when(response.data()).thenReturn(meanData);
+            when(client.getMeanEnergyYield()).thenReturn(response);
+
+            VensysMeanData result = service.getMeanEnergyYield();
+
+            assertEquals(meanData, result);
+            verify(client).getMeanEnergyYield();
+        }
+
+        @Test
+        @DisplayName("Throws NullPointerException when client response is null")
+        void getMeanEnergyYield_throwsExceptionWhenClientReturnsNull() {
+            when(client.getMeanEnergyYield()).thenReturn(null);
+
+            assertThrows(NullPointerException.class, () -> service.getMeanEnergyYield());
+            verify(client).getMeanEnergyYield();
+        }
+
+        @Test
+        @DisplayName("Throws NullPointerException when client response data is null")
+        void getMeanEnergyYield_throwsExceptionWhenClientDataIsNull() {
+            VensysMeanDataResponse response = mock(VensysMeanDataResponse.class);
+            when(response.data()).thenReturn(null);
+            when(client.getMeanEnergyYield()).thenReturn(response);
+
+            assertThrows(NullPointerException.class, () -> service.getMeanEnergyYield());
+            verify(client).getMeanEnergyYield();
+        }
     }
 
-    @Test
-    @DisplayName("getYesterdayPerformance delegates to getPerformance with correct dates")
-    void testGetYesterdayPerformance() {
-        VensysPerformanceData perfData = VensysPerformanceData.builder().powerAvg(42.0).build();
-        LocalDate yesterday = LocalDate.now().minusDays(1);
-        LocalDateTime from = LocalDateTime.of(yesterday, LocalTime.MIDNIGHT);
-        LocalDateTime to = LocalDateTime.of(yesterday, LocalTime.MAX);
-        GraigFathaStatsServiceImpl spyService = spy(service);
-        doReturn(perfData).when(spyService).getPerformance(from, to);
-        VensysPerformanceData result = spyService.getYesterdayPerformance();
-        assertEquals(perfData, result);
-        verify(spyService).getPerformance(from, to);
+    @Nested
+    @DisplayName("getYesterdayPerformance tests")
+    class GetYesterdayPerformanceTests {
+        @Test
+        @DisplayName("Delegates to getPerformance with correct date range")
+        void getYesterdayPerformance_delegatesToGetPerformance() {
+            var perfData = VensysPerformanceData.builder().powerAvg(42.0).build();
+            var yesterday = LocalDate.now().minusDays(1);
+            var from = LocalDateTime.of(yesterday, LocalTime.MIDNIGHT);
+            var to = LocalDateTime.of(yesterday, LocalTime.MAX);
+            GraigFathaStatsServiceImpl spyService = spy(service);
+            doReturn(perfData).when(spyService).getPerformance(from, to);
+
+            VensysPerformanceData result = spyService.getYesterdayPerformance();
+
+            assertEquals(perfData, result);
+            verify(spyService).getPerformance(from, to);
+        }
     }
 
-    @Test
-    @DisplayName("getPerformance delegates to client and returns data")
-    void testGetPerformance() {
-        VensysPerformanceData[] perfDataArr = { VensysPerformanceData.builder().powerAvg(99.0).build() };
-        VensysPerformanceDataResponse response = mock(VensysPerformanceDataResponse.class);
-        when(response.data()).thenReturn(perfDataArr);
-        when(client.getPerformance(anyLong(), anyLong())).thenReturn(response);
-        var from = LocalDateTime.now().minusDays(2);;
-        var to = LocalDateTime.now();
-        VensysPerformanceData result = service.getPerformance(from, to);
-        assertEquals(perfDataArr[0], result);
-        verify(client).getPerformance(anyLong(), anyLong());
+    @Nested
+    @DisplayName("getPerformance tests")
+    class GetPerformanceTests {
+        @Test
+        @DisplayName("Returns first performance data from client")
+        void getPerformance_returnsFirstDataPoint() {
+            VensysPerformanceData[] perfDataArr = { VensysPerformanceData.builder().powerAvg(99.0).build() };
+            VensysPerformanceDataResponse response = mock(VensysPerformanceDataResponse.class);
+            when(response.data()).thenReturn(perfDataArr);
+            when(client.getPerformance(anyLong(), anyLong())).thenReturn(response);
+
+            var from = LocalDateTime.now().minusDays(2);
+            var to = LocalDateTime.now();
+            VensysPerformanceData result = service.getPerformance(from, to);
+
+            assertEquals(perfDataArr[0], result);
+            verify(client).getPerformance(anyLong(), anyLong());
+        }
+
+        @Test
+        @DisplayName("Throws NullPointerException when client returns null response")
+        void getPerformance_throwsExceptionWhenClientReturnsNull() {
+            when(client.getPerformance(anyLong(), anyLong())).thenReturn(null);
+
+            var from = LocalDateTime.now().minusDays(2);
+            var to = LocalDateTime.now();
+
+            assertThrows(NullPointerException.class, () -> service.getPerformance(from, to));
+            verify(client).getPerformance(anyLong(), anyLong());
+        }
+
+        @Test
+        @DisplayName("Throws ArrayIndexOutOfBoundsException when client returns empty data array")
+        void getPerformance_throwsExceptionWhenNoData() {
+            VensysPerformanceData[] perfDataArr = {};
+            VensysPerformanceDataResponse response = mock(VensysPerformanceDataResponse.class);
+            when(response.data()).thenReturn(perfDataArr);
+            when(client.getPerformance(anyLong(), anyLong())).thenReturn(response);
+
+            var from = LocalDateTime.now().minusDays(2);
+            var to = LocalDateTime.now();
+
+            assertThrows(ArrayIndexOutOfBoundsException.class, () -> service.getPerformance(from, to));
+            verify(client).getPerformance(anyLong(), anyLong());
+        }
+
+        @Test
+        @DisplayName("Throws NullPointerException when client response data is null")
+        void getPerformance_throwsExceptionWhenClientDataIsNull() {
+            VensysPerformanceDataResponse response = mock(VensysPerformanceDataResponse.class);
+            when(response.data()).thenReturn(null);
+            when(client.getPerformance(anyLong(), anyLong())).thenReturn(response);
+
+            var from = LocalDateTime.now().minusDays(2);
+            var to = LocalDateTime.now();
+
+            assertThrows(NullPointerException.class, () -> service.getPerformance(from, to));
+            verify(client).getPerformance(anyLong(), anyLong());
+        }
     }
 }

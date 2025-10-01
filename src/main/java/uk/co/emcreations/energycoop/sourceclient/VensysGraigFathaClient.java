@@ -12,6 +12,9 @@ public interface VensysGraigFathaClient {
     @GetMapping(value = "/Customer/MeanData/Show/EnergyYield")
     VensysMeanDataResponse getMeanEnergyYield();
 
+    @GetMapping(value = "/Customer/Performance")
+    VensysPerformanceDataResponse getCurrentPerformance();
+
     @GetMapping(value = "/Customer/Performance?From={from}&To={to}")
     VensysPerformanceDataResponse getPerformance(@RequestParam long from, @RequestParam long to);
 }
