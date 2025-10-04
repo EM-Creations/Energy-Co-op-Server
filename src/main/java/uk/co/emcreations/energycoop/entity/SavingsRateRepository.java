@@ -9,4 +9,6 @@ import java.util.Optional;
 public interface SavingsRateRepository extends JpaRepository<SavingsRate, Long> {
     Optional<SavingsRate> findTopBySiteAndEffectiveDateLessThanEqualOrderByEffectiveDateDesc(
             final Site site, final LocalDate date);
+
+    Optional<SavingsRate> findBySiteAndEffectiveDate(final Site site, final LocalDate date);
 }

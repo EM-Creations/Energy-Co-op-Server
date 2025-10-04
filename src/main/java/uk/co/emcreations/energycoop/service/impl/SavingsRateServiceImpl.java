@@ -10,6 +10,8 @@ import uk.co.emcreations.energycoop.model.Site;
 import uk.co.emcreations.energycoop.service.SavingsRateService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -40,5 +42,29 @@ public class SavingsRateServiceImpl implements SavingsRateService {
         log.debug("Retrieved savings rate for site {} on date {}: {} per kWh", site, date, savingsRate);
 
         return savingsRate;
+    }
+
+    @Override
+    public SavingsRate setSavingsRateForDate(final Site site, final LocalDate date, final double ratePerKWH) {
+        Optional<SavingsRate> currentRateOpt = savingsRateRepository.findBySiteAndEffectiveDate(site, date);
+
+        SavingsRate rate;
+        if (currentRateOpt.isPresent()) {
+            rate = currentRateOpt.get();
+
+            log.warn("Savings rate for site {} on date {} already exists: {} per kWh, updating..",
+                    site, date, rate.getRatePerKWH());
+
+            rate.setCreatedAt(LocalDateTime.now());
+            rate.setRatePerKWH(ratePerKWH);
+        } else {
+            rate = SavingsRate.builder()
+                    .site(site)
+                    .effectiveDate(date)
+                    .ratePerKWH(ratePerKWH)
+                    .build();
+        }
+
+        return savingsRateRepository.save(rate);
     }
 }
