@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -38,11 +39,12 @@ class AdminControllerTest {
     @DisplayName("setSavingsRate tests")
     class SetSavingsRateTests {
         private final LocalDate TEST_DATE = LocalDate.of(2024, 1, 1);
+        private final String TEST_DATE_STR = "2024-01-01";
         private final double TEST_RATE = 5.67;
 
         @Test
         @WithMockUser
-        @DisplayName("POST /savings-rate/{site}/{date}/{rate} returns 200 OK for Graig Fatha")
+        @DisplayName("POST /savings-rate returns 200 OK for Graig Fatha")
         void testSetSavingsRateGraigFatha() throws Exception {
             var expectedRate = SavingsRate.builder()
                     .site(Site.GRAIG_FATHA)
@@ -53,20 +55,28 @@ class AdminControllerTest {
             when(savingsRateService.setSavingsRateForDate(eq(Site.GRAIG_FATHA), eq(TEST_DATE), eq(TEST_RATE)))
                     .thenReturn(expectedRate);
 
+            var requestJson = """
+                    {
+                        "site": "GRAIG_FATHA",
+                        "effectiveDate": "%s",
+                        "ratePerKWH": %s
+                    }""".formatted(TEST_DATE_STR, TEST_RATE);
+
             MvcResult result = mockMvc.perform(MockMvcRequestBuilders
-                    .post(BASE_URL + "/savings-rate/GRAIG_FATHA/2024-01-01/5.67")
+                    .post(BASE_URL + "/savings-rate")
+                    .contentType(APPLICATION_JSON)
+                    .content(requestJson)
                     .with(csrf()))
                     .andExpect(status().isOk())
                     .andReturn();
 
             String json = result.getResponse().getContentAsString();
-
             assertTrue(json.contains(String.valueOf(expectedRate.getRatePerKWH())));
         }
 
         @Test
         @WithMockUser
-        @DisplayName("POST /savings-rate/{site}/{date}/{rate} returns 200 OK for Kirk Hill")
+        @DisplayName("POST /savings-rate returns 200 OK for Kirk Hill")
         void testSetSavingsRateKirkHill() throws Exception {
             var expectedRate = SavingsRate.builder()
                     .site(Site.KIRK_HILL)
@@ -77,20 +87,28 @@ class AdminControllerTest {
             when(savingsRateService.setSavingsRateForDate(eq(Site.KIRK_HILL), eq(TEST_DATE), eq(TEST_RATE)))
                     .thenReturn(expectedRate);
 
+            var requestJson = """
+                    {
+                        "site": "KIRK_HILL",
+                        "effectiveDate": "%s",
+                        "ratePerKWH": %s
+                    }""".formatted(TEST_DATE_STR, TEST_RATE);
+
             MvcResult result = mockMvc.perform(MockMvcRequestBuilders
-                    .post(BASE_URL + "/savings-rate/KIRK_HILL/2024-01-01/5.67")
+                    .post(BASE_URL + "/savings-rate")
+                    .contentType(APPLICATION_JSON)
+                    .content(requestJson)
                     .with(csrf()))
                     .andExpect(status().isOk())
                     .andReturn();
 
             String json = result.getResponse().getContentAsString();
-
             assertTrue(json.contains(String.valueOf(expectedRate.getRatePerKWH())));
         }
 
         @Test
         @WithMockUser
-        @DisplayName("POST /savings-rate/{site}/{date}/{rate} returns 200 OK for Derril Water")
+        @DisplayName("POST /savings-rate returns 200 OK for Derril Water")
         void testSetSavingsRateDerrilWater() throws Exception {
             var expectedRate = SavingsRate.builder()
                     .site(Site.DERRIL_WATER)
@@ -101,53 +119,96 @@ class AdminControllerTest {
             when(savingsRateService.setSavingsRateForDate(eq(Site.DERRIL_WATER), eq(TEST_DATE), eq(TEST_RATE)))
                     .thenReturn(expectedRate);
 
+            var requestJson = """
+                    {
+                        "site": "DERRIL_WATER",
+                        "effectiveDate": "%s",
+                        "ratePerKWH": %s
+                    }""".formatted(TEST_DATE_STR, TEST_RATE);
+
             MvcResult result = mockMvc.perform(MockMvcRequestBuilders
-                    .post(BASE_URL + "/savings-rate/DERRIL_WATER/2024-01-01/5.67")
+                    .post(BASE_URL + "/savings-rate")
+                    .contentType(APPLICATION_JSON)
+                    .content(requestJson)
                     .with(csrf()))
                     .andExpect(status().isOk())
                     .andReturn();
 
             String json = result.getResponse().getContentAsString();
-
             assertTrue(json.contains(String.valueOf(expectedRate.getRatePerKWH())));
         }
 
         @Test
         @WithMockUser
-        @DisplayName("POST /savings-rate/{site}/{date}/{rate} returns 400 BAD REQUEST for invalid site")
+        @DisplayName("POST /savings-rate returns 400 BAD REQUEST for invalid site")
         void testSetSavingsRateInvalidSite() throws Exception {
+            var invalidJson = """
+                    {
+                        "site": "INVALID_SITE",
+                        "effectiveDate": "2024-01-01",
+                        "ratePerKWH": 5.67
+                    }""";
+
             mockMvc.perform(MockMvcRequestBuilders
-                    .post(BASE_URL + "/savings-rate/INVALID_SITE/2024-01-01/5.67")
+                    .post(BASE_URL + "/savings-rate")
+                    .contentType(APPLICATION_JSON)
+                    .content(invalidJson)
                     .with(csrf()))
                     .andExpect(status().isBadRequest());
         }
 
         @Test
         @WithMockUser
-        @DisplayName("POST /savings-rate/{site}/{date}/{rate} returns 400 BAD REQUEST for invalid date format")
+        @DisplayName("POST /savings-rate returns 400 BAD REQUEST for invalid date format")
         void testSetSavingsRateInvalidDate() throws Exception {
+            var invalidJson = """
+                    {
+                        "site": "GRAIG_FATHA",
+                        "effectiveDate": "invalid-date",
+                        "ratePerKWH": 5.67
+                    }""";
+
             mockMvc.perform(MockMvcRequestBuilders
-                    .post(BASE_URL + "/savings-rate/GRAIG_FATHA/invalid-date/5.67")
+                    .post(BASE_URL + "/savings-rate")
+                    .contentType(APPLICATION_JSON)
+                    .content(invalidJson)
                     .with(csrf()))
                     .andExpect(status().isBadRequest());
         }
 
         @Test
         @WithMockUser
-        @DisplayName("POST /savings-rate/{site}/{date}/{rate} returns 400 BAD REQUEST for invalid rate")
+        @DisplayName("POST /savings-rate returns 400 BAD REQUEST for invalid rate")
         void testSetSavingsRateInvalidRate() throws Exception {
+            var invalidJson = """
+                    {
+                        "site": "GRAIG_FATHA",
+                        "effectiveDate": "2024-01-01",
+                        "ratePerKWH": "invalid-rate"
+                    }""";
+
             mockMvc.perform(MockMvcRequestBuilders
-                    .post(BASE_URL + "/savings-rate/GRAIG_FATHA/2024-01-01/invalid-rate")
+                    .post(BASE_URL + "/savings-rate")
+                    .contentType(APPLICATION_JSON)
+                    .content(invalidJson)
                     .with(csrf()))
                     .andExpect(status().isBadRequest());
         }
 
         @Test
-        @WithMockUser
-        @DisplayName("POST /savings-rate/{site}/{date}/{rate} returns 403 FORBIDDEN without login")
+        @DisplayName("POST /savings-rate returns 403 FORBIDDEN without login")
         void testSetSavingsRateUnauthorized() throws Exception {
+            var requestJson = """
+                    {
+                        "site": "GRAIG_FATHA",
+                        "effectiveDate": "%s",
+                        "ratePerKWH": %s
+                    }""".formatted(TEST_DATE_STR, TEST_RATE);
+
             mockMvc.perform(MockMvcRequestBuilders
-                    .post(BASE_URL + "/savings-rate/GRAIG_FATHA/2024-01-01/5.67"))
+                    .post(BASE_URL + "/savings-rate")
+                    .contentType(APPLICATION_JSON)
+                    .content(requestJson))
                     .andExpect(status().isForbidden());
         }
     }

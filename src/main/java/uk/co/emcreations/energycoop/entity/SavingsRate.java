@@ -1,8 +1,7 @@
 package uk.co.emcreations.energycoop.entity;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import uk.co.emcreations.energycoop.model.Site;
 
@@ -10,9 +9,12 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Data
 @Entity
-@Builder
+@Getter
+@Setter
+@Builder(toBuilder = true)
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
+@NoArgsConstructor(access = AccessLevel.PACKAGE)
 public class SavingsRate implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
