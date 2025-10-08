@@ -4,7 +4,7 @@ springDocVersion = "2.8.13"
 
 mockitoVersion = "5.20.0"
 
-logbackVersion = "1.5.18"
+logbackVersion = "1.5.19"
 
 auth0Version = "3.0.7"
 
