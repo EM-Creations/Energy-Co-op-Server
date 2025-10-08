@@ -7,6 +7,6 @@ import java.time.LocalDate;
 
 public interface SavingsRateService {
     double getSavingsRateForDate(final Site site, final LocalDate date);
-    SavingsRate setSavingsRateForDate(final Site site, final LocalDate date, final double ratePerKWH);
+    SavingsRate setSavingsRateForDate(final Site site, final LocalDate date, final double ratePerKWH, final String userId);
 }
 

@@ -32,4 +32,7 @@ public class SavingsRate implements Serializable {
 
     @Column(nullable = false)
     private LocalDate effectiveDate;
+
+    @Column(nullable = false)
+    private String lastUpdatedByUser;
 }

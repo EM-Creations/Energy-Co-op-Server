@@ -16,7 +16,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
  * It allows public access to certain endpoints and secures all other requests.
  */
 @Configuration
-@Profile("!dev")
+@Profile("!dev && !test")
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
     @Value("${okta.oauth2.issuer}")

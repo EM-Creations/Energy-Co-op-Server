@@ -45,7 +45,7 @@ public class SavingsRateServiceImpl implements SavingsRateService {
     }
 
     @Override
-    public SavingsRate setSavingsRateForDate(final Site site, final LocalDate date, final double ratePerKWH) {
+    public SavingsRate setSavingsRateForDate(final Site site, final LocalDate date, final double ratePerKWH, final String userId) {
         Optional<SavingsRate> currentRateOpt = savingsRateRepository.findBySiteAndEffectiveDate(site, date);
 
         SavingsRate rate;
@@ -57,11 +57,13 @@ public class SavingsRateServiceImpl implements SavingsRateService {
 
             rate.setCreatedAt(LocalDateTime.now());
             rate.setRatePerKWH(ratePerKWH);
+            rate.setLastUpdatedByUser(userId);
         } else {
             rate = SavingsRate.builder()
                     .site(site)
                     .effectiveDate(date)
                     .ratePerKWH(ratePerKWH)
+                    .lastUpdatedByUser(userId)
                     .build();
         }
 
