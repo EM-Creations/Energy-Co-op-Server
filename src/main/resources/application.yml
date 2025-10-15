@@ -50,4 +50,4 @@ site:
   capacity:
     gf: ${SITE_CAPACITY_GF}
 
-allowedOrigins: http://localhost:4200,https://energycoop-ui-production.up.railway.app,https://energycoop-ui.onrender.com
+allowedOrigins: http://localhost:4200,https://energycoop-ui-production.up.railway.app,https://energy-coop-ui-staging.159.65.85.83.sslip.io
