@@ -60,6 +60,7 @@
 [![Energy Co-op Server Screen Shot](https://github.com/EM-Creations/Energy-Co-op-Server/blob/main/public/demo.jpg)](https://github.com/EM-Creations/Energy-Co-op-Server)
 
 Energy Co-op Server is intended to be a Spring Boot server backend to facilitate the management of users accessing Energy Co-op information.
+This application is designed to run in conjunction with the [Energy Co-op UI](https://github.com/EM-Creations/Energy-Co-op-UI).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -172,6 +173,44 @@ gradle clean build
 7. Give the image a name, e.g. `energy-coop-server` and build it
 8. When running the image, set the port mapping to `8080:8080` on the "Basic" tab
 9. Click "Start Container" to run the server
+
+## Deployment Setup
+The application is designed to be deployed via OCI images using Podman or Docker on hosting platforms such as [Railway](https://railway.com/), [Render](https://render.com/) and [Coolify](https://coolify.io/) (and has been tested on these too). These steps detail configuration necessary on these hosting platforms.
+1. Create an account on your chosen hosting platform or install it on your own hardware (in the case of Coolify).
+2. Create 2 docker / OCI image applications to be deployed. One pointing to the server's image and one pointing to the UI's image.
+3. Create a Postgres 17 database and make note of its connection details (username, password, URL etc..).
+
+### UI Setup
+1. Modify the `environment.ts` file in the UI project to point the `api -> baseURL` value to the deployed server's URL (get this from your hosting platform).
+2. Ensure the UI image is exposed on port 80 on the hosting platform.
+3. Save, commit, push, wait for the GitHub action to complete (this will update the latest image) and re-deploy it on the hosting platform.
+
+### Backend Setup
+1. Modify the `application.yml` file in the server project to include the `allowedOrigins` URL of the deployed UI application (get this from your hosting platform).
+2. Ensure the backend image is exposed on port 8080 on the hosting platform.
+3. Save, commit, push, wait for the GitHub action to complete (this will update the latest image) and re-deploy it on the hosting platform.
+4. You now need to set the following environment variables on your hosting platform for the backend application:
+```bash
+     API_GRAIG_FATHA_KEY="XXX" # Graig Fatha API key
+     API_GRAIG_FATHA_TID="XXX" # Graig Fatha TID
+     API_GRAIG_FATHA_URL="XXX" # Graig Fatha API URL
+     AUTH0_AUDIENCE="http://XXX:XX/" # This will be whatever audience you setup in the Auth0 setup
+     AUTH0_CLIENT_ID="XXX" # Get this from Auth0 settings
+     AUTH0_ISSUER="https://XXX/" # Get this from Auth0 settings
+     AUTH0_SECRET="XXX" # Get this from Auth0 settings
+     DB_PASSWORD="XXX" # Get this from the hosting platform
+     DB_URL="jdbc:postgresql://xxx:5432/xx" # Get this from the hosting platform, normally Postgres hostname, port and database name
+     DB_USER="XXX" # Get this from the hosting platform
+     SITE_CAPACITY_GF="XXX" # Default capacity for Graig Fatha site
+     SITE_RATES_GF="XXX" # Default savings rate for Graig Fatha site
+```
+5. Restart the backend application to apply the environment variable changes.
+
+### Auth0 Setup
+1. In the Auth0 dashboard, go to Applications > APIs -> UI Application and add the deployed UI application's URL to the `Allowed Callback URLs`, `Allowed Logout URLs` and `Allowed Web Origins`.
+2. Save
+3. In the Auth0 dashboard, go to Applications > APIs -> Backend Application and add the deployed UI application's URL to the `Allowed Callback URLs`, `Allowed Logout URLs` and `Allowed Web Origins`.
+4. Save
 
 <!-- USAGE EXAMPLES -->
 ## Usage
