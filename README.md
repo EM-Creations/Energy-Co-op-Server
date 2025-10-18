@@ -45,6 +45,7 @@
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
+    <li><a href="#deployment-setup">Deployment Setup</a></li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
@@ -174,6 +175,7 @@ gradle clean build
 8. When running the image, set the port mapping to `8080:8080` on the "Basic" tab
 9. Click "Start Container" to run the server
 
+<!-- DEPLOYMENT SETUP -->
 ## Deployment Setup
 The application is designed to be deployed via OCI images using Podman or Docker on hosting platforms such as [Railway](https://railway.com/), [Render](https://render.com/) and [Coolify](https://coolify.io/) (and has been tested on these too). These steps detail configuration necessary on these hosting platforms.
 1. Create an account on your chosen hosting platform or install it on your own hardware (in the case of Coolify).
