@@ -2,11 +2,13 @@ package uk.co.emcreations.energycoop.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.co.emcreations.energycoop.dto.VensysMeanData;
 import uk.co.emcreations.energycoop.dto.VensysMeanDataResponse;
 import uk.co.emcreations.energycoop.dto.VensysPerformanceData;
+import uk.co.emcreations.energycoop.dto.VensysPerformanceDataResponse;
+import uk.co.emcreations.energycoop.service.AlertService;
 import uk.co.emcreations.energycoop.service.GraigFathaStatsService;
 import uk.co.emcreations.energycoop.sourceclient.VensysGraigFathaClient;
 
@@ -20,8 +22,12 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class GraigFathaStatsServiceImpl implements GraigFathaStatsService {
-    @Autowired
     private final VensysGraigFathaClient client;
+    private final AlertService alertService;
+    @Value("${alerts.thresholds.availability:75.0}")
+    private double availabilityThreshold;
+    @Value("${alerts.thresholds.failure-time:100.0}")
+    private double failureTimeThreshold;
 
     @Override
     public VensysMeanData getMeanEnergyYield() {
@@ -54,12 +60,61 @@ public class GraigFathaStatsServiceImpl implements GraigFathaStatsService {
         var fromTimestamp = from.toEpochSecond(ZoneOffset.UTC);
         var toTimestamp = to.toEpochSecond(ZoneOffset.UTC);
 
-        return client.getPerformance(fromTimestamp, toTimestamp).data()[0];
+        VensysPerformanceDataResponse response = client.getPerformance(fromTimestamp, toTimestamp);
+        validatePerformanceData(response);
+
+        return response.data()[0];
     }
 
     private VensysPerformanceData getCurrentPerformance() {
         log.info("getCurrentPerformance() called");
 
-        return client.getCurrentPerformance().data()[0];
+        VensysPerformanceDataResponse response = client.getCurrentPerformance();
+        validatePerformanceData(response);
+
+        return response.data()[0];
+    }
+
+    private void validatePerformanceData(final VensysPerformanceDataResponse response) {
+        var alertMessage = new StringBuilder();
+
+        if (response == null) {
+            alertMessage.append("Performance response is null.\n");
+        } else {
+            VensysPerformanceData data = response.data()[0];
+
+            if (availabilityThreshold >= data.availability()) {
+                alertMessage.append("Availability (").append(data.availability()).append(") less than threshold (")
+                        .append(availabilityThreshold).append(").\n");
+            }
+
+            if (failureTimeThreshold < data.fireTime()) {
+                alertMessage.append("Fire time (").append(data.fireTime()).append(") exceeds threshold (")
+                        .append(failureTimeThreshold).append(").\n");
+            }
+
+            if (failureTimeThreshold < data.commFailureTime()) {
+                alertMessage.append("Comm failure time (").append(data.commFailureTime()).append(") exceeds threshold (")
+                        .append(failureTimeThreshold).append(").\n");
+            }
+
+            if (failureTimeThreshold < data.gridFailureTime()) {
+                alertMessage.append("Grid failure time (").append(data.gridFailureTime()).append(") exceeds threshold (")
+                        .append(failureTimeThreshold).append(").\n");
+            }
+
+            if (failureTimeThreshold < data.errorTime()) {
+                alertMessage.append("Error time (").append(data.errorTime()).append(") exceeds threshold (")
+                        .append(failureTimeThreshold).append(").\n");
+            }
+        }
+
+        if (!alertMessage.isEmpty()) {
+            var timeStr = (null != response) ? response.from() + " -> " + response.to() + "\n" : "Unknown";
+
+            alertMessage.insert(0, "GF (" + timeStr + "): ");
+
+            alertService.sendAlert(alertMessage.toString());
+        }
     }
 }

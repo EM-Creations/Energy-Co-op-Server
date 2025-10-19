@@ -205,6 +205,10 @@ The application is designed to be deployed via OCI images using Podman or Docker
      DB_USER="XXX" # Get this from the hosting platform
      SITE_CAPACITY_GF="XXX" # Default capacity for Graig Fatha site
      SITE_RATES_GF="XXX" # Default savings rate for Graig Fatha site
+     ALERTS_ENABLED="false" # True or false
+     ALERTS_DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/XXX/XXX" # Discord webhook URL for alerts
+     ALERTS_THRESHOLDS_AVAILABILITY="75.0" # Availability threshold percentage for alerts
+     ALERTS_THRESHOLDS_FAILURE_TIME="3600.0" # Failure time threshold (seconds) for alerts
 ```
 5. Restart the backend application to apply the environment variable changes.
 

@@ -50,4 +50,12 @@ site:
   capacity:
     gf: ${SITE_CAPACITY_GF}
 
+alerts:
+  enabled: ${ALERTS_ENABLED}
+  discord:
+    webhook-url: ${ALERTS_DISCORD_WEBHOOK_URL}
+  thresholds:
+    availability: ${ALERTS_THRESHOLDS_AVAILABILITY}
+    failure-time: ${ALERTS_THRESHOLDS_FAILURE_TIME}
+
 allowedOrigins: http://localhost:4200,https://energycoop-ui-production.up.railway.app,https://energy-coop-ui-staging.159.65.85.83.sslip.io
