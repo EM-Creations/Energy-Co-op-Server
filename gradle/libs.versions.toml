@@ -4,8 +4,6 @@ springDocVersion = "2.8.13"
 
 mockitoVersion = "5.20.0"
 
-logbackVersion = "1.5.19"
-
 auth0Version = "3.0.7"
 
 apacheCommonsVersion = "3.19.0"
@@ -22,7 +20,6 @@ asciiDoctorVersion = "4.0.5"
 [libraries]
 springDoc = { group = "org.springdoc", name = "springdoc-openapi-starter-webmvc-ui", version.ref = "springDocVersion" }
 mockito = { module = "org.mockito:mockito-core", version.ref = "mockitoVersion" }
-logback = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logbackVersion" }
 auth0 = { group = "com.okta.spring", name = "okta-spring-boot-starter", version.ref = "auth0Version" }
 apache-commons-lang = { group = "org.apache.commons", name = "commons-lang3", version.ref = "apacheCommonsVersion" }
 postgresql = { group = "org.postgresql", name = "postgresql", version.ref = "postgresqlVersion" }
