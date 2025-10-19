@@ -69,10 +69,7 @@ public class GraigFathaStatsServiceImpl implements GraigFathaStatsService {
     private VensysPerformanceData getCurrentPerformance() {
         log.info("getCurrentPerformance() called");
 
-        VensysPerformanceDataResponse response = client.getCurrentPerformance();
-        validatePerformanceData(response);
-
-        return response.data()[0];
+        return client.getCurrentPerformance().data()[0];
     }
 
     private void validatePerformanceData(final VensysPerformanceDataResponse response) {
