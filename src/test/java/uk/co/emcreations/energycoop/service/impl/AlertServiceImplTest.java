@@ -19,6 +19,7 @@ import uk.co.emcreations.energycoop.model.Site;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -194,6 +195,51 @@ class AlertServiceImplTest {
             assertNotNull(actualWebhook, "Webhook body should not be null");
             assertEquals(expectedMessage, actualWebhook.content());
             verify(entityManager).persist(any(Alert.class));
+        }
+    }
+
+    @Nested
+    class GetLatestAlertsTests {
+        @Test
+        void getLatestAlerts_returnsListFromRepository() {
+            var alerts = List.of(
+                Alert.builder().site(testSite).message("Alert 1").build(),
+                Alert.builder().site(testSite).message("Alert 2").build()
+            );
+            when(alertRepository.findTop30BySiteOrderByCreatedAtDesc(testSite)).thenReturn(alerts);
+
+            List<Alert> result = service.getLatestAlerts(testSite);
+
+            assertEquals(alerts, result);
+            verify(alertRepository).findTop30BySiteOrderByCreatedAtDesc(testSite);
+        }
+
+        @Test
+        void getLatestAlerts_returnsEmptyListWhenNoAlerts() {
+            when(alertRepository.findTop30BySiteOrderByCreatedAtDesc(testSite)).thenReturn(List.of());
+
+            List<Alert> result = service.getLatestAlerts(testSite);
+
+            assertTrue(result.isEmpty());
+            verify(alertRepository).findTop30BySiteOrderByCreatedAtDesc(testSite);
+        }
+
+        @Test
+        void getLatestAlerts_returnsAlertsForSpecificSiteOnly() {
+            var otherSite = Site.KIRK_HILL;
+            var alerts = List.of(
+                Alert.builder().site(testSite).message("Alert for test site").build()
+            );
+            when(alertRepository.findTop30BySiteOrderByCreatedAtDesc(testSite)).thenReturn(alerts);
+            when(alertRepository.findTop30BySiteOrderByCreatedAtDesc(otherSite)).thenReturn(List.of());
+
+            List<Alert> testSiteResults = service.getLatestAlerts(testSite);
+            List<Alert> otherSiteResults = service.getLatestAlerts(otherSite);
+
+            assertFalse(testSiteResults.isEmpty());
+            assertTrue(otherSiteResults.isEmpty());
+            verify(alertRepository).findTop30BySiteOrderByCreatedAtDesc(testSite);
+            verify(alertRepository).findTop30BySiteOrderByCreatedAtDesc(otherSite);
         }
     }
 }

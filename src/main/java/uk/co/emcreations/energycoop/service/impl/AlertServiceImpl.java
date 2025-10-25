@@ -15,6 +15,7 @@ import uk.co.emcreations.energycoop.model.Site;
 import uk.co.emcreations.energycoop.service.AlertService;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -53,6 +54,11 @@ public class AlertServiceImpl implements AlertService {
         } else {
             log.info("An alert has already been sent today for site {}, skipping..", site);
         }
+    }
+
+    @Override
+    public List<Alert> getLatestAlerts(final Site site) {
+        return alertRepository.findTop30BySiteOrderByCreatedAtDesc(site);
     }
 
     private boolean hasBeenAnAlertToday(final Site site) {

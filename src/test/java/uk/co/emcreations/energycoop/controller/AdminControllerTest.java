@@ -1,6 +1,5 @@
 package uk.co.emcreations.energycoop.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -13,13 +12,18 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import uk.co.emcreations.energycoop.entity.Alert;
 import uk.co.emcreations.energycoop.entity.SavingsRate;
 import uk.co.emcreations.energycoop.model.Site;
+import uk.co.emcreations.energycoop.service.AlertService;
 import uk.co.emcreations.energycoop.service.impl.SavingsRateServiceImpl;
 
 import java.time.LocalDate;
+import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -29,7 +33,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @WebMvcTest(AdminController.class)
 class AdminControllerTest {
-    private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final String BASE_URL = "/api/v1/admin";
 
     @Autowired
@@ -37,6 +40,9 @@ class AdminControllerTest {
 
     @MockitoBean
     private SavingsRateServiceImpl savingsRateService;
+
+    @MockitoBean
+    private AlertService alertService;
 
     @Nested
     @DisplayName("setSavingsRate tests")
@@ -218,6 +224,117 @@ class AdminControllerTest {
                     .contentType(APPLICATION_JSON)
                     .content(requestJson))
                     .andExpect(status().isForbidden());
+        }
+    }
+
+    @Nested
+    @DisplayName("getAlerts tests")
+    class GetAlertsTests {
+        @Test
+        @WithMockUser(authorities = "read:alerts")
+        @DisplayName("GET /alerts/{site} returns 200 OK and alerts for Graig Fatha")
+        void getAlerts_returnsAlertsForGraigFatha() throws Exception {
+            var alerts = List.of(
+                Alert.builder()
+                    .site(Site.GRAIG_FATHA)
+                    .message("Test alert 1")
+                    .build(),
+                Alert.builder()
+                    .site(Site.GRAIG_FATHA)
+                    .message("Test alert 2")
+                    .build()
+            );
+            when(alertService.getLatestAlerts(Site.GRAIG_FATHA)).thenReturn(alerts);
+
+            MvcResult result = mockMvc.perform(MockMvcRequestBuilders
+                    .get(BASE_URL + "/alerts/GRAIG_FATHA")
+                    .with(csrf()))
+                    .andExpect(status().isOk())
+                    .andReturn();
+
+            String json = result.getResponse().getContentAsString();
+            assertTrue(json.contains("Test alert 1"));
+            assertTrue(json.contains("Test alert 2"));
+        }
+
+        @Test
+        @WithMockUser(authorities = "read:alerts")
+        @DisplayName("GET /alerts/{site} returns 200 OK and alerts for Kirk Hill")
+        void getAlerts_returnsAlertsForKirkHill() throws Exception {
+            var alerts = List.of(
+                Alert.builder()
+                    .site(Site.KIRK_HILL)
+                    .message("Kirk Hill alert")
+                    .build()
+            );
+            when(alertService.getLatestAlerts(Site.KIRK_HILL)).thenReturn(alerts);
+
+            MvcResult result = mockMvc.perform(MockMvcRequestBuilders
+                    .get(BASE_URL + "/alerts/KIRK_HILL")
+                    .with(csrf()))
+                    .andExpect(status().isOk())
+                    .andReturn();
+
+            String json = result.getResponse().getContentAsString();
+            assertTrue(json.contains("Kirk Hill alert"));
+        }
+
+        @Test
+        @WithMockUser(authorities = "read:alerts")
+        @DisplayName("GET /alerts/{site} returns 200 OK and alerts for Derril Water")
+        void getAlerts_returnsAlertsForDerrilWater() throws Exception {
+            var alerts = List.of(
+                Alert.builder()
+                    .site(Site.DERRIL_WATER)
+                    .message("Derril Water alert")
+                    .build()
+            );
+            when(alertService.getLatestAlerts(Site.DERRIL_WATER)).thenReturn(alerts);
+
+            MvcResult result = mockMvc.perform(MockMvcRequestBuilders
+                    .get(BASE_URL + "/alerts/DERRIL_WATER")
+                    .with(csrf()))
+                    .andExpect(status().isOk())
+                    .andReturn();
+
+            String json = result.getResponse().getContentAsString();
+            assertTrue(json.contains("Derril Water alert"));
+        }
+
+        @Test
+        @WithMockUser(authorities = "read:alerts")
+        @DisplayName("GET /alerts/{site} returns 200 OK and empty list when no alerts")
+        void getAlerts_returnsEmptyList_whenNoAlerts() throws Exception {
+            when(alertService.getLatestAlerts(any(Site.class))).thenReturn(List.of());
+
+            MvcResult result = mockMvc.perform(MockMvcRequestBuilders
+                    .get(BASE_URL + "/alerts/GRAIG_FATHA")
+                    .with(csrf()))
+                    .andExpect(status().isOk())
+                    .andReturn();
+
+            String json = result.getResponse().getContentAsString();
+            assertEquals("[]", json, "Should return empty JSON array");
+        }
+
+
+        @Test
+        @DisplayName("GET /alerts/{site} returns 302 FORBIDDEN without login")
+        void getAlerts_returnsForbidden_withoutLogin() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders
+                    .get(BASE_URL + "/alerts/GRAIG_FATHA")
+                    .with(csrf()))
+                    .andExpect(status().is3xxRedirection());
+        }
+
+        @Test
+        @WithMockUser(authorities = "read:alerts")
+        @DisplayName("GET /alerts/{site} returns 400 BAD REQUEST for invalid site")
+        void getAlerts_returnsBadRequest_forInvalidSite() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders
+                    .get(BASE_URL + "/alerts/INVALID_SITE")
+                    .with(csrf()))
+                    .andExpect(status().isBadRequest());
         }
     }
 }
