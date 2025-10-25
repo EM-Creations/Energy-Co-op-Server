@@ -113,7 +113,7 @@ public class GraigFathaStatsServiceImpl implements GraigFathaStatsService {
         if (!alertMessage.isEmpty()) {
             var timeStr = (null != response) ? response.from() + " -> " + response.to() + "\n" : "Unknown";
 
-            alertMessage.insert(0, "GF (" + timeStr + "): ");
+            alertMessage.insert(0, "(" + timeStr + "): ");
 
             alertService.sendAlert(Site.GRAIG_FATHA, alertMessage.toString());
         }
