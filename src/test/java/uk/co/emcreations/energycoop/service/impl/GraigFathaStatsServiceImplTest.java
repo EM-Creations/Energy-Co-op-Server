@@ -13,6 +13,7 @@ import uk.co.emcreations.energycoop.dto.VensysMeanData;
 import uk.co.emcreations.energycoop.dto.VensysMeanDataResponse;
 import uk.co.emcreations.energycoop.dto.VensysPerformanceData;
 import uk.co.emcreations.energycoop.dto.VensysPerformanceDataResponse;
+import uk.co.emcreations.energycoop.model.Site;
 import uk.co.emcreations.energycoop.service.AlertService;
 import uk.co.emcreations.energycoop.sourceclient.VensysGraigFathaClient;
 
@@ -43,10 +44,8 @@ class GraigFathaStatsServiceImplTest {
     }
 
     @Nested
-    @DisplayName("getMeanEnergyYield tests")
     class GetMeanEnergyYieldTests {
         @Test
-        @DisplayName("Returns data from client successfully")
         void getMeanEnergyYield_returnsData() {
             var meanData = VensysMeanData.builder().value(123.0).build();
             VensysMeanDataResponse response = mock(VensysMeanDataResponse.class);
@@ -60,7 +59,6 @@ class GraigFathaStatsServiceImplTest {
         }
 
         @Test
-        @DisplayName("Throws NullPointerException when client response is null")
         void getMeanEnergyYield_throwsExceptionWhenClientReturnsNull() {
             when(client.getMeanEnergyYield()).thenReturn(null);
 
@@ -69,19 +67,11 @@ class GraigFathaStatsServiceImplTest {
         }
 
         @Test
-        @DisplayName("Throws NullPointerException when client response data is null")
-        void getMeanEnergyYield_throwsExceptionWhenClientDataIsNull() {
-            VensysMeanDataResponse response = mock(VensysMeanDataResponse.class);
-            when(response.data()).thenReturn(null);
-            when(client.getMeanEnergyYield()).thenReturn(response);
-
-            assertThrows(NullPointerException.class, () -> service.getMeanEnergyYield());
-            verify(client).getMeanEnergyYield();
-        }
-
-        @Test
-        @DisplayName("Falls back to current performance when mean data is null")
         void getMeanEnergyYield_fallsBackToCurrentPerformance() {
+            VensysMeanDataResponse meanResponse = mock(VensysMeanDataResponse.class);
+            when(meanResponse.data()).thenReturn(null);
+            when(client.getMeanEnergyYield()).thenReturn(meanResponse);
+
             var perfData = VensysPerformanceData.builder()
                     .energyYield(456.0)
                     .build();
@@ -89,13 +79,21 @@ class GraigFathaStatsServiceImplTest {
             when(perfResponse.data()).thenReturn(new VensysPerformanceData[]{perfData});
             when(client.getCurrentPerformance()).thenReturn(perfResponse);
 
-            VensysMeanDataResponse meanResponse = mock(VensysMeanDataResponse.class);
-            when(meanResponse.data()).thenReturn(null);
-            when(client.getMeanEnergyYield()).thenReturn(meanResponse);
-
             VensysMeanData result = service.getMeanEnergyYield();
 
             assertEquals(456.0, result.value());
+            verify(client).getMeanEnergyYield();
+            verify(client).getCurrentPerformance();
+        }
+
+        @Test
+        void getMeanEnergyYield_throwsExceptionWhenCurrentPerformanceNull() {
+            VensysMeanDataResponse meanResponse = mock(VensysMeanDataResponse.class);
+            when(meanResponse.data()).thenReturn(null);
+            when(client.getMeanEnergyYield()).thenReturn(meanResponse);
+            when(client.getCurrentPerformance()).thenReturn(null);
+
+            assertThrows(NullPointerException.class, () -> service.getMeanEnergyYield());
             verify(client).getMeanEnergyYield();
             verify(client).getCurrentPerformance();
         }
@@ -188,9 +186,11 @@ class GraigFathaStatsServiceImplTest {
         @Test
         @DisplayName("Sends alert when response is null")
         void validatePerformanceData_sendsAlertWhenResponseIsNull() {
+            when(client.getPerformance(anyLong(), anyLong())).thenReturn(null);
+
             assertThrows(NullPointerException.class, () -> service.getPerformance(LocalDateTime.now(), LocalDateTime.now()));
 
-            verify(alertService).sendAlert(argThat(message ->
+            verify(alertService).sendAlert(eq(Site.GRAIG_FATHA), argThat(message ->
                 message.contains("Performance response is null")));
         }
 
@@ -206,7 +206,7 @@ class GraigFathaStatsServiceImplTest {
 
             service.getPerformance(LocalDateTime.now(), LocalDateTime.now());
 
-            verify(alertService).sendAlert(argThat(message ->
+            verify(alertService).sendAlert(eq(Site.GRAIG_FATHA), argThat(message ->
                 message.contains("Availability (70.0) less than threshold (75.0)")));
         }
 
@@ -222,7 +222,7 @@ class GraigFathaStatsServiceImplTest {
 
             service.getPerformance(LocalDateTime.now(), LocalDateTime.now());
 
-            verify(alertService).sendAlert(argThat(message ->
+            verify(alertService).sendAlert(eq(Site.GRAIG_FATHA), argThat(message ->
                 message.contains("Fire time (150.0) exceeds threshold (100.0)")));
         }
 
@@ -238,7 +238,7 @@ class GraigFathaStatsServiceImplTest {
 
             service.getPerformance(LocalDateTime.now(), LocalDateTime.now());
 
-            verify(alertService).sendAlert(argThat(message ->
+            verify(alertService).sendAlert(eq(Site.GRAIG_FATHA), argThat(message ->
                 message.contains("Comm failure time (120.0) exceeds threshold (100.0)")));
         }
 
@@ -254,7 +254,7 @@ class GraigFathaStatsServiceImplTest {
 
             service.getPerformance(LocalDateTime.now(), LocalDateTime.now());
 
-            verify(alertService).sendAlert(argThat(message ->
+            verify(alertService).sendAlert(eq(Site.GRAIG_FATHA), argThat(message ->
                 message.contains("Grid failure time (110.0) exceeds threshold (100.0)")));
         }
 
@@ -270,7 +270,7 @@ class GraigFathaStatsServiceImplTest {
 
             service.getPerformance(LocalDateTime.now(), LocalDateTime.now());
 
-            verify(alertService).sendAlert(argThat(message ->
+            verify(alertService).sendAlert(eq(Site.GRAIG_FATHA), argThat(message ->
                 message.contains("Error time (130.0) exceeds threshold (100.0)")));
         }
 
@@ -290,7 +290,7 @@ class GraigFathaStatsServiceImplTest {
 
             service.getPerformance(LocalDateTime.now(), LocalDateTime.now());
 
-            verify(alertService, never()).sendAlert(any());
+            verify(alertService, never()).sendAlert(any(), any());
         }
 
         @Test
@@ -307,7 +307,7 @@ class GraigFathaStatsServiceImplTest {
 
             service.getPerformance(LocalDateTime.now(), LocalDateTime.now());
 
-            verify(alertService).sendAlert(argThat(message ->
+            verify(alertService).sendAlert(eq(Site.GRAIG_FATHA), argThat(message ->
                 message.contains("2025-10-19T00:00:00 -> 2025-10-19T23:59:59")));
         }
     }

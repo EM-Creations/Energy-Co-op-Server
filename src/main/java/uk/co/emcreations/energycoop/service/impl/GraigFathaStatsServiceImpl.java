@@ -8,6 +8,7 @@ import uk.co.emcreations.energycoop.dto.VensysMeanData;
 import uk.co.emcreations.energycoop.dto.VensysMeanDataResponse;
 import uk.co.emcreations.energycoop.dto.VensysPerformanceData;
 import uk.co.emcreations.energycoop.dto.VensysPerformanceDataResponse;
+import uk.co.emcreations.energycoop.model.Site;
 import uk.co.emcreations.energycoop.service.AlertService;
 import uk.co.emcreations.energycoop.service.GraigFathaStatsService;
 import uk.co.emcreations.energycoop.sourceclient.VensysGraigFathaClient;
@@ -69,7 +70,10 @@ public class GraigFathaStatsServiceImpl implements GraigFathaStatsService {
     private VensysPerformanceData getCurrentPerformance() {
         log.info("getCurrentPerformance() called");
 
-        return client.getCurrentPerformance().data()[0];
+        VensysPerformanceDataResponse response = client.getCurrentPerformance();
+        validatePerformanceData(response);
+
+        return response.data()[0];
     }
 
     private void validatePerformanceData(final VensysPerformanceDataResponse response) {
@@ -111,7 +115,7 @@ public class GraigFathaStatsServiceImpl implements GraigFathaStatsService {
 
             alertMessage.insert(0, "GF (" + timeStr + "): ");
 
-            alertService.sendAlert(alertMessage.toString());
+            alertService.sendAlert(Site.GRAIG_FATHA, alertMessage.toString());
         }
     }
 }
