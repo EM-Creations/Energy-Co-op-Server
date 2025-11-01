@@ -85,28 +85,28 @@ public class GraigFathaStatsServiceImpl implements GraigFathaStatsService {
             VensysPerformanceData data = response.data()[0];
 
             if (availabilityThreshold >= data.availability()) {
-                alertMessage.append("Availability (").append(data.availability()).append(") less than threshold (")
-                        .append(availabilityThreshold).append(").\n");
+                alertMessage.append("Availability (").append(data.availability()).append("%) less than threshold (")
+                        .append(availabilityThreshold).append("%).\n");
             }
 
             if (failureTimeThreshold < data.fireTime()) {
-                alertMessage.append("Fire time (").append(data.fireTime()).append(") exceeds threshold (")
-                        .append(failureTimeThreshold).append(").\n");
+                alertMessage.append("Fire time (").append(data.fireTime()).append("s) exceeds threshold (")
+                        .append(failureTimeThreshold).append("s).\n");
             }
 
             if (failureTimeThreshold < data.commFailureTime()) {
-                alertMessage.append("Comm failure time (").append(data.commFailureTime()).append(") exceeds threshold (")
-                        .append(failureTimeThreshold).append(").\n");
+                alertMessage.append("Comm failure time (").append(data.commFailureTime()).append("s) exceeds threshold (")
+                        .append(failureTimeThreshold).append("s).\n");
             }
 
             if (failureTimeThreshold < data.gridFailureTime()) {
-                alertMessage.append("Grid failure time (").append(data.gridFailureTime()).append(") exceeds threshold (")
-                        .append(failureTimeThreshold).append(").\n");
+                alertMessage.append("Grid failure time (").append(data.gridFailureTime()).append("s) exceeds threshold (")
+                        .append(failureTimeThreshold).append("s).\n");
             }
 
             if (failureTimeThreshold < data.errorTime()) {
-                alertMessage.append("Error time (").append(data.errorTime()).append(") exceeds threshold (")
-                        .append(failureTimeThreshold).append(").\n");
+                alertMessage.append("Error time (").append(data.errorTime()).append("s) exceeds threshold (")
+                        .append(failureTimeThreshold).append("s).\n");
             }
         }
 

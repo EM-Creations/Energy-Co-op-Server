@@ -207,7 +207,7 @@ class GraigFathaStatsServiceImplTest {
             service.getPerformance(LocalDateTime.now(), LocalDateTime.now());
 
             verify(alertService).sendAlert(eq(Site.GRAIG_FATHA), argThat(message ->
-                message.contains("Availability (70.0) less than threshold (75.0)")));
+                message.contains("Availability (70.0%) less than threshold (75.0%)")));
         }
 
         @Test
@@ -223,7 +223,7 @@ class GraigFathaStatsServiceImplTest {
             service.getPerformance(LocalDateTime.now(), LocalDateTime.now());
 
             verify(alertService).sendAlert(eq(Site.GRAIG_FATHA), argThat(message ->
-                message.contains("Fire time (150.0) exceeds threshold (100.0)")));
+                message.contains("Fire time (150.0s) exceeds threshold (100.0s)")));
         }
 
         @Test
@@ -239,7 +239,7 @@ class GraigFathaStatsServiceImplTest {
             service.getPerformance(LocalDateTime.now(), LocalDateTime.now());
 
             verify(alertService).sendAlert(eq(Site.GRAIG_FATHA), argThat(message ->
-                message.contains("Comm failure time (120.0) exceeds threshold (100.0)")));
+                message.contains("Comm failure time (120.0s) exceeds threshold (100.0s)")));
         }
 
         @Test
@@ -255,7 +255,7 @@ class GraigFathaStatsServiceImplTest {
             service.getPerformance(LocalDateTime.now(), LocalDateTime.now());
 
             verify(alertService).sendAlert(eq(Site.GRAIG_FATHA), argThat(message ->
-                message.contains("Grid failure time (110.0) exceeds threshold (100.0)")));
+                message.contains("Grid failure time (110.0s) exceeds threshold (100.0s)")));
         }
 
         @Test
@@ -271,7 +271,7 @@ class GraigFathaStatsServiceImplTest {
             service.getPerformance(LocalDateTime.now(), LocalDateTime.now());
 
             verify(alertService).sendAlert(eq(Site.GRAIG_FATHA), argThat(message ->
-                message.contains("Error time (130.0) exceeds threshold (100.0)")));
+                message.contains("Error time (130.0s) exceeds threshold (100.0s)")));
         }
 
         @Test
