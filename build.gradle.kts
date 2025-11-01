@@ -64,6 +64,7 @@ dependencies {
 	implementation(libs.springDoc)
 	implementation(libs.auth0)
     implementation(libs.apache.commons.lang)
+    implementation(libs.pdfbox)
 
 	compileOnly("org.projectlombok:lombok")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")

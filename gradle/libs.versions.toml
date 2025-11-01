@@ -17,12 +17,15 @@ springDependencyManagementVersion = "1.1.7"
 
 asciiDoctorVersion = "4.0.5"
 
+pdfBoxVersion = "3.0.6"
+
 [libraries]
 springDoc = { group = "org.springdoc", name = "springdoc-openapi-starter-webmvc-ui", version.ref = "springDocVersion" }
 mockito = { module = "org.mockito:mockito-core", version.ref = "mockitoVersion" }
 auth0 = { group = "com.okta.spring", name = "okta-spring-boot-starter", version.ref = "auth0Version" }
 apache-commons-lang = { group = "org.apache.commons", name = "commons-lang3", version.ref = "apacheCommonsVersion" }
 postgresql = { group = "org.postgresql", name = "postgresql", version.ref = "postgresqlVersion" }
+pdfbox = { group = "org.apache.pdfbox", name = "pdfbox", version.ref = "pdfBoxVersion" }
 
 [plugins]
 springBoot = { id = "org.springframework.boot", version.ref = "springBootVersion" }

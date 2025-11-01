@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -22,12 +23,13 @@ import java.time.LocalDateTime;
 import java.util.EnumMap;
 import java.util.Set;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(GraigFathaMemberController.class)
 class GraigFathaMemberControllerTest {
@@ -50,6 +52,10 @@ class GraigFathaMemberControllerTest {
         ownerships.put(Site.GRAIG_FATHA, 100.0);
         principalHelperMock.when(() -> PrincipalHelper.extractOwnershipsFromPrincipal(any(Principal.class)))
                 .thenReturn(ownerships);
+
+        // Also stub user extraction to a default user id
+        principalHelperMock.when(() -> PrincipalHelper.extractUserFromPrincipal(any(Principal.class)))
+                .thenReturn("user-1");
     }
 
     @AfterEach
@@ -115,14 +121,41 @@ class GraigFathaMemberControllerTest {
     @Test
     @DisplayName("GET /todaySavings returns 500 if PrincipalHelper throws")
     void testGetTodaySavings_principalHelperThrows() {
-        Principal principal = mock(Principal.class);
-
         principalHelperMock.when(() -> PrincipalHelper.extractOwnershipsFromPrincipal(any(Principal.class)))
                 .thenThrow(new RuntimeException("Principal extraction failed"));
 
         assertThrows(ServletException.class, () -> {
             mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/todaySavings").with(oidcLogin()))
                     .andExpect(status().is5xxServerError())
+                    .andReturn();
+        });
+    }
+
+    @Test
+    @DisplayName("GET /tax-document returns PDF and correct headers")
+    void testGenerateTaxDocument_success() throws Exception {
+        Principal principal = mock(Principal.class);
+        byte[] pdf = "pdfdata".getBytes();
+
+        when(service.generateTaxDocument(any(LocalDate.class), any(LocalDate.class), eq(100.0), eq("user-1")))
+                .thenReturn(pdf);
+
+        mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/tax-document/2023-01-01/2023-01-31").with(oidcLogin()).principal(principal))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_PDF))
+                .andExpect(header().string("Content-Disposition", containsString("TaxDocument.pdf")))
+                .andExpect(content().bytes(pdf));
+    }
+
+    @Test
+    @DisplayName("GET /tax-document throws servlet exception when ownerships are missing")
+    void testGenerateTaxDocument_missingOwnerships() {
+        principalHelperMock.when(() -> PrincipalHelper.extractOwnershipsFromPrincipal(any(Principal.class)))
+                .thenReturn(null);
+
+        assertThrows(ServletException.class, () -> {
+            mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/tax-document/2023-01-01/2023-01-31").with(oidcLogin()))
+                    .andExpect(status().isOk())
                     .andReturn();
         });
     }

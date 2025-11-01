@@ -19,11 +19,13 @@ import uk.co.emcreations.energycoop.service.MemberOwnershipService;
 import uk.co.emcreations.energycoop.service.SavingsRateService;
 import uk.co.emcreations.energycoop.util.EntityHelper;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,7 +44,6 @@ class GraigFathaMemberServiceImplTest {
     void setUp() {
         service.totalCapacity = 100.0;
         entityHelperMock = mockStatic(EntityHelper.class);
-        when(savingsRateService.getSavingsRateForDate(any(), any())).thenReturn(1.0);
     }
 
     @AfterEach
@@ -58,6 +59,7 @@ class GraigFathaMemberServiceImplTest {
         @DisplayName("getTodaySavings returns correct savings when repository has data")
         void testGetTodaySavings_withRepoData() {
             GenerationStatEntry entry = mock(GenerationStatEntry.class);
+            when(savingsRateService.getSavingsRateForDate(any(), any())).thenReturn(1.0);
             when(entry.getKWhGenerated()).thenReturn(50.0);
             when(generationStatEntryRepository.findFirstBySiteAndTimestampBetweenOrderByTimestampDesc(any(), any(), any())).thenReturn(entry);
             var wattageOwnership = 10.0;
@@ -69,6 +71,7 @@ class GraigFathaMemberServiceImplTest {
         @Test
         @DisplayName("getTodaySavings persists and returns correct savings when repository has no data")
         void testGetTodaySavings_withNoRepoData() {
+            when(savingsRateService.getSavingsRateForDate(any(), any())).thenReturn(1.0);
             when(generationStatEntryRepository.findFirstBySiteAndTimestampBetweenOrderByTimestampDesc(any(), any(), any())).thenReturn(null);
             VensysMeanData meanData = VensysMeanData.builder().value(60.0).build();
             when(graigFathaStatsService.getMeanEnergyYield()).thenReturn(meanData);
@@ -85,6 +88,7 @@ class GraigFathaMemberServiceImplTest {
         @DisplayName("getTodaySavings returns zero for zero ownership")
         void testGetTodaySavings_zeroOwnership() {
             GenerationStatEntry entry = mock(GenerationStatEntry.class);
+            when(savingsRateService.getSavingsRateForDate(any(), any())).thenReturn(1.0);
             when(entry.getKWhGenerated()).thenReturn(100.0);
             when(generationStatEntryRepository.findFirstBySiteAndTimestampBetweenOrderByTimestampDesc(any(), any(), any())).thenReturn(entry);
             var wattageOwnership = 0.0;
@@ -96,6 +100,7 @@ class GraigFathaMemberServiceImplTest {
         @DisplayName("getTodaySavings handles negative ownership")
         void testGetTodaySavings_negativeOwnership() {
             GenerationStatEntry entry = mock(GenerationStatEntry.class);
+            when(savingsRateService.getSavingsRateForDate(any(), any())).thenReturn(1.0);
             when(entry.getKWhGenerated()).thenReturn(100.0);
             when(generationStatEntryRepository.findFirstBySiteAndTimestampBetweenOrderByTimestampDesc(any(), any(), any())).thenReturn(entry);
             double wattageOwnership = -10.0;
@@ -113,6 +118,7 @@ class GraigFathaMemberServiceImplTest {
         @DisplayName("getSavings returns correct savings for multiple days with repo data")
         void testGetSavings_withRepoData() {
             PerformanceStatEntry entry = mock(PerformanceStatEntry.class);
+            when(savingsRateService.getSavingsRateForDate(any(), any())).thenReturn(1.0);
             when(entry.getKWhGenerated()).thenReturn(100.0);
             when(performanceStatEntryRepository.findFirstBySiteAndForDateBetweenOrderByTimestampDesc(any(), any(), any())).thenReturn(entry);
             when(memberOwnershipService.getMemberOwnershipForSite(any(), any(), anyString(), anyDouble()))
@@ -132,6 +138,7 @@ class GraigFathaMemberServiceImplTest {
         @Test
         @DisplayName("getSavings persists and returns correct savings when repo has no data")
         void testGetSavings_withNoRepoData() {
+            when(savingsRateService.getSavingsRateForDate(any(), any())).thenReturn(1.0);
             when(performanceStatEntryRepository.findFirstBySiteAndForDateBetweenOrderByTimestampDesc(any(), any(), any())).thenReturn(null);
             when(memberOwnershipService.getMemberOwnershipForSite(any(), any(), anyString(), anyDouble()))
                     .thenAnswer(invocation -> invocation.getArgument(3));
@@ -149,6 +156,82 @@ class GraigFathaMemberServiceImplTest {
             EnergySaving saving = savings.iterator().next();
             assertEquals(100.0, saving.amount());
             verify(entityManager).persist(statEntry);
+        }
+    }
+
+    @Nested
+    @DisplayName("generateTaxDocument Tests")
+    class GenerateTaxDocument {
+        private static final String userId = "testUser";
+        private static final LocalDate from = LocalDate.of(2025, 1, 1);
+        private static final LocalDate to = LocalDate.of(2025, 12, 31);
+        private static final double wattageOwnership = 10.0;
+
+        @Test
+        @DisplayName("generateTaxDocument returns PDF bytes with correct savings")
+        void testGenerateTaxDocument_success() throws IOException {
+            // Given
+            PerformanceStatEntry entry = mock(PerformanceStatEntry.class);
+            when(savingsRateService.getSavingsRateForDate(any(), any())).thenReturn(1.0);
+            when(entry.getKWhGenerated()).thenReturn(100.0);
+            when(performanceStatEntryRepository.findFirstBySiteAndForDateBetweenOrderByTimestampDesc(any(), any(), any()))
+                    .thenReturn(entry);
+            when(memberOwnershipService.getMemberOwnershipForSite(any(), any(), eq(userId), eq(wattageOwnership)))
+                    .thenReturn(wattageOwnership);
+
+            // When
+            byte[] result = service.generateTaxDocument(from, to, wattageOwnership, userId);
+
+            // Then
+            assertNotNull(result);
+            assertTrue(result.length > 0);
+            verify(performanceStatEntryRepository, times(365))
+                    .findFirstBySiteAndForDateBetweenOrderByTimestampDesc(any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("generateTaxDocument handles missing performance data")
+        void testGenerateTaxDocument_withMissingData() throws IOException {
+            // Given
+            when(savingsRateService.getSavingsRateForDate(any(), any())).thenReturn(1.0);
+            when(performanceStatEntryRepository.findFirstBySiteAndForDateBetweenOrderByTimestampDesc(any(), any(), any()))
+                    .thenReturn(null);
+            var perfData = VensysPerformanceData.builder().powerAvg(200.0).build();
+            when(graigFathaStatsService.getPerformance(any(), any())).thenReturn(perfData);
+            PerformanceStatEntry statEntry = mock(PerformanceStatEntry.class);
+            when(statEntry.getKWhGenerated()).thenReturn(200.0);
+            entityHelperMock.when(() -> EntityHelper.createPerformanceStatEntry(any(), any())).thenReturn(statEntry);
+            when(memberOwnershipService.getMemberOwnershipForSite(any(), any(), eq(userId), eq(wattageOwnership)))
+                    .thenReturn(wattageOwnership);
+
+            // When
+            byte[] result = service.generateTaxDocument(from, to, wattageOwnership, userId);
+
+            // Then
+            assertNotNull(result);
+            assertTrue(result.length > 0);
+            verify(entityManager, atLeastOnce()).persist(any(PerformanceStatEntry.class));
+        }
+
+        @Test
+        @DisplayName("generateTaxDocument handles null dates")
+        void testGenerateTaxDocument_nullDates() {
+            assertAll(
+                () -> assertThrows(NullPointerException.class, () ->
+                    service.generateTaxDocument(null, to, wattageOwnership, userId)
+                ),
+                () -> assertThrows(NullPointerException.class, () ->
+                    service.generateTaxDocument(from, null, wattageOwnership, userId)
+                )
+            );
+        }
+
+        @Test
+        @DisplayName("generateTaxDocument handles null userId")
+        void testGenerateTaxDocument_nullUserId() {
+            assertThrows(NullPointerException.class, () ->
+                service.generateTaxDocument(from, to, wattageOwnership, null)
+            );
         }
     }
 }

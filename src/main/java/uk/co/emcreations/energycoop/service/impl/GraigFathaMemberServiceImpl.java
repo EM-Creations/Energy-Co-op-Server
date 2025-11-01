@@ -20,6 +20,7 @@ import uk.co.emcreations.energycoop.service.GraigFathaStatsService;
 import uk.co.emcreations.energycoop.service.MemberOwnershipService;
 import uk.co.emcreations.energycoop.service.SavingsRateService;
 import uk.co.emcreations.energycoop.util.EntityHelper;
+import uk.co.emcreations.energycoop.util.TaxDocument;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -109,6 +110,18 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
         log.info("Calculated savings for {} member between: {} and {} = {}", userId, from, to, totalSavings);
 
         return savingsSet;
+    }
+
+    @Override
+    public byte[] generateTaxDocument(final LocalDate from, final LocalDate to, final double suppliedOwnershipWattage,
+                                          final String userId) {
+        log.info("generateTaxDocument() called with from: {}, to: {}, suppliedOwnershipWattage: {} and user: {}",
+                from, to, suppliedOwnershipWattage, userId);
+
+        Set<EnergySaving> savings = getSavings(from, to, suppliedOwnershipWattage, userId);
+        double totalSavingsAmount = savings.stream().mapToDouble(EnergySaving::amount).sum();
+
+        return TaxDocument.generateTaxDocument(GRAIG_FATHA, userId, from, to, totalSavingsAmount);
     }
 
     private double getGenerationBetweenTimes(final LocalDateTime start, final LocalDateTime end) {
