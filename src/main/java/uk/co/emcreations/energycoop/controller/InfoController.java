@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.co.emcreations.energycoop.model.Site;
 import uk.co.emcreations.energycoop.service.InfoService;
 
+import java.security.Principal;
+
 @RestController
 @RequestMapping("/api/v1/info")
 @RequiredArgsConstructor
@@ -18,9 +20,15 @@ public class InfoController {
     @Autowired
     private final InfoService infoService;
 
-    @GetMapping(name = "Sites", value = "/sites")
-    @Operation(summary = "Sites", description = "Returns all sites supported by the application.")
+    @GetMapping(name = "All sites", value = "/sites")
+    @Operation(summary = "All sites", description = "Returns all sites supported by the application.")
     public Site[] getSites() {
         return infoService.getSites();
+    }
+
+    @GetMapping(name = "Sites owned", value = "/sites-owned")
+    @Operation(summary = "Sites owned", description = "Returns all sites which the user has some ownership of.")
+    public Site[] getSitesOwned(final Principal principal) {
+        return infoService.getSitesWithUserOwnership(principal);
     }
 }
