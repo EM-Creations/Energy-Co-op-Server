@@ -58,4 +58,4 @@ alerts:
     availability: ${ALERTS_THRESHOLDS_AVAILABILITY}
     failure-time: ${ALERTS_THRESHOLDS_FAILURE_TIME}
 
-allowedOrigins: http://localhost:4200,https://energycoop-ui-production.up.railway.app,https://energy-coop-ui-staging.159.65.85.83.sslip.io
+allowedOrigins: http://localhost:4200,https://user-dashboard-staging.windcoop.co.uk
