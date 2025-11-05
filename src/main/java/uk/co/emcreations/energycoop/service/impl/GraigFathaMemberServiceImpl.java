@@ -46,6 +46,12 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
     @Value("${site.capacity.gf:100}")
     double totalCapacity;
 
+    @Value("${site.share-price.gf:0.00165}")
+    double sharePrice;
+
+    @Value("${site.first-year-operation-end.gf:2023}")
+    int firstYearOfOperationEnd;
+
     @Override
     public EnergySaving getTodaySavings(final double wattageOwnership) {
         log.info("getTodaySavings() called with wattageOwnership: {}", wattageOwnership);
@@ -121,7 +127,14 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
         Set<EnergySaving> savings = getSavings(from, to, suppliedOwnershipWattage, userId);
         double totalSavingsAmount = savings.stream().mapToDouble(EnergySaving::amount).sum();
 
-        return TaxDocument.generateTaxDocument(GRAIG_FATHA, userId, from, to, totalSavingsAmount);
+        int fullYearsOfOperation = to.getYear() - firstYearOfOperationEnd;
+        double initialShares = getInitialShares(suppliedOwnershipWattage);
+        double sharesWithdrawn = getWithdrawnShares(initialShares);
+        double currentShares = initialShares - (fullYearsOfOperation * sharesWithdrawn);
+        double capitalWithdrawn = getCapitalWithdrawn(sharesWithdrawn);
+
+        return TaxDocument.generateTaxDocument(GRAIG_FATHA, userId, from, to, totalSavingsAmount, currentShares,
+                sharesWithdrawn, capitalWithdrawn);
     }
 
     private double getGenerationBetweenTimes(final LocalDateTime start, final LocalDateTime end) {
@@ -168,5 +181,17 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
 
     private double getOwnershipPercentage(final double wattageOwnership) {
         return wattageOwnership / totalCapacity;
+    }
+
+    private double getInitialShares(final double wattageOwnership) {
+        return wattageOwnership * 1000;
+    }
+
+    private double getWithdrawnShares(final double initialShares) {
+        return initialShares / 20;
+    }
+
+    private double getCapitalWithdrawn(final double withdrawnShares) {
+        return withdrawnShares * sharePrice;
     }
 }

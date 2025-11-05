@@ -49,6 +49,10 @@ site:
     gf: ${SITE_RATES_GF}
   capacity:
     gf: ${SITE_CAPACITY_GF}
+  share-price:
+    gf: ${SITE_SHARE_PRICE_GF}
+  first-year-operation-end:
+    gf: ${SITE_FIRST_YEAR_OP_END_GF}
 
 alerts:
   enabled: ${ALERTS_ENABLED}

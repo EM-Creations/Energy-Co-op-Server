@@ -13,20 +13,28 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 
 public class TaxDocument {
     public static byte[] generateTaxDocument(final Site site, final String userId, final LocalDate from,
-                                             final LocalDate to, final double totalSavingsAmount) {
+                                             final LocalDate to, final double totalSavingsAmount, final double currentShares,
+                                             final double withdrawnShares, final double withdrawnCapital) {
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            String formattedTotalSavingsAmount = String.format("%.2f", totalSavingsAmount);
+            // Formatting helpers
+            String formattedTotalSavingsAmount = formatCurrency(totalSavingsAmount);
+            String formattedCurrentShares = formatInteger(currentShares);
+            String formattedWithdrawnShares = formatInteger(withdrawnShares);
+            String formattedWithdrawnCapital = formatCurrency(withdrawnCapital);
 
-            var document = new PDDocument();
-            PDDocumentInformation info = document.getDocumentInformation();
-            info.setAuthor("Energy Co-op");
-            info.setCreator("Energy Co-op");
-            info.setTitle("Tax Document (" + site + ") " + from + " to " + to);
-            info.setSubject("Tax Document for " + site + ".");
+            double carriedShares = currentShares - withdrawnShares;
+            String formattedCarriedShares = formatInteger(carriedShares);
 
+            double interestIncome = totalSavingsAmount - withdrawnCapital;
+            String formattedInterestIncome = formatCurrency(interestIncome);
+
+            // Create document and page
+            var document = createDocument(site, from, to);
             var page = new PDPage();
             document.addPage(page);
             var cs = new PDPageContentStream(document, page);
@@ -41,35 +49,28 @@ public class TaxDocument {
             float startX = mediaBox.getLowerLeftX() + margin;
             float startY = mediaBox.getUpperRightY() - margin;
 
-            cs.beginText();
-            cs.setFont(font, 16);
-            cs.newLineAtOffset(startX, startY);
-            cs.showText("Energy Co-op (" + site + ") Tax Document");
-            cs.newLineAtOffset(0, -leading);
+            // Prepare the content lines in the same order as before
+            List<String> bodyLines = Arrays.asList(
+                    "Generation time: " + LocalDateTime.now(),
+                    "Produced for user: " + userId,
+                    "Period: " + from + " to " + to,
+                    "",
+                    "Brought forward shares: " + formattedCurrentShares,
+                    "Shares withdrawn: " + formattedWithdrawnShares,
+                    "Carried forward shares: " + formattedCarriedShares,
+                    "",
+                    "Total savings: £" + formattedTotalSavingsAmount,
+                    "Capital withdrawn: £" + formattedWithdrawnCapital,
+                    "Interest income: £" + formattedInterestIncome,
+                    "",
+                    "This document is intended for informational purposes only.",
+                    "Please consult a tax professional for advice regarding your specific situation."
+            );
 
-            cs.newLineAtOffset(0, -leading);
-            cs.setFont(font, fontSize);
-            cs.showText("Generation time: " + LocalDateTime.now());
-            cs.newLineAtOffset(0, -leading);
+            var title = "Energy Co-op (" + site + ") Tax Document";
 
-            cs.newLineAtOffset(0, -leading);
-            cs.showText("Produced for user: " + userId);
-
-            cs.newLineAtOffset(0, -leading);
-            cs.showText("Period: " + from + " to " + to);
-
-            cs.newLineAtOffset(0, -leading);
-            cs.showText("Total savings: £" + formattedTotalSavingsAmount);
-            cs.newLineAtOffset(0, -leading);
-
-            // Disclaimer
-            cs.newLineAtOffset(0, -leading);
-            cs.showText("This document is intended for informational purposes only.");
-            cs.newLineAtOffset(0, -leading);
-            cs.showText("Please consult a tax professional for advice regarding your specific situation.");
-
-            cs.endText();
-            cs.close();
+            // title font size was constant; compute it inside helper to reduce cognitive complexity
+            writeDocumentContent(cs, font, startX, startY, fontSize, leading, title, bodyLines);
 
             document.save(os);
             document.close();
@@ -78,5 +79,49 @@ public class TaxDocument {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    // Helper: format currency with grouping and two decimal places
+    private static String formatCurrency(double value) {
+        return String.format("%,.2f", value);
+    }
+
+    // Helper: format integer-like values with grouping and no decimals
+    private static String formatInteger(double value) {
+        return String.format("%,.0f", value);
+    }
+
+    // Helper: create a PDDocument and set metadata
+    private static PDDocument createDocument(Site site, LocalDate from, LocalDate to) {
+        var document = new PDDocument();
+        PDDocumentInformation info = document.getDocumentInformation();
+        info.setAuthor("Energy Co-op");
+        info.setCreator("Energy Co-op");
+        info.setTitle("Tax Document (" + site + ") " + from + " to " + to);
+        info.setSubject("Tax Document for " + site + ".");
+        return document;
+    }
+
+    // Helper: write the title and body lines to the content stream and close the stream
+    private static void writeDocumentContent(final PDPageContentStream cs, final PDType1Font font,
+                                             float startX, float startY, float bodyFontSize,
+                                             float leading, final String title, final List<String> bodyLines) throws IOException {
+        var titleFontSize = 16f; // fixed title size
+
+        cs.beginText();
+        cs.setFont(font, titleFontSize);
+        cs.newLineAtOffset(startX, startY);
+        cs.showText(title);
+        cs.newLineAtOffset(0, -leading);
+        cs.newLineAtOffset(0, -leading);
+
+        cs.setFont(font, bodyFontSize);
+        for (String line : bodyLines) {
+            cs.showText(line);
+            cs.newLineAtOffset(0, -leading);
+        }
+
+        cs.endText();
+        cs.close();
     }
 }

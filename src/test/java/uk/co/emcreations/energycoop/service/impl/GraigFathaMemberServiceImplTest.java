@@ -1,6 +1,8 @@
 package uk.co.emcreations.energycoop.service.impl;
 
 import jakarta.persistence.EntityManager;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -168,16 +170,19 @@ class GraigFathaMemberServiceImplTest {
         private static final double wattageOwnership = 10.0;
 
         @Test
-        @DisplayName("generateTaxDocument returns PDF bytes with correct savings")
-        void testGenerateTaxDocument_success() throws IOException {
+        @DisplayName("generateTaxDocument returns PDF with properly formatted numbers")
+        void testGenerateTaxDocument_numberFormatting() throws IOException {
             // Given
+            double dailyGeneration = 1234.567; // Should format as 1,234.57
+            double effectiveOwnership = wattageOwnership * 100; // Simulated ownership percentage
+
             PerformanceStatEntry entry = mock(PerformanceStatEntry.class);
             when(savingsRateService.getSavingsRateForDate(any(), any())).thenReturn(1.0);
-            when(entry.getKWhGenerated()).thenReturn(100.0);
+            when(entry.getKWhGenerated()).thenReturn(dailyGeneration);
             when(performanceStatEntryRepository.findFirstBySiteAndForDateBetweenOrderByTimestampDesc(any(), any(), any()))
                     .thenReturn(entry);
             when(memberOwnershipService.getMemberOwnershipForSite(any(), any(), eq(userId), eq(wattageOwnership)))
-                    .thenReturn(wattageOwnership);
+                    .thenReturn(effectiveOwnership);
 
             // When
             byte[] result = service.generateTaxDocument(from, to, wattageOwnership, userId);
@@ -185,14 +190,51 @@ class GraigFathaMemberServiceImplTest {
             // Then
             assertNotNull(result);
             assertTrue(result.length > 0);
-            verify(performanceStatEntryRepository, times(365))
-                    .findFirstBySiteAndForDateBetweenOrderByTimestampDesc(any(), any(), any());
+
+            // Extract and verify formatted content
+            String content = extractPdfContent(result);
+
+            // Annual savings should be dailyGeneration * 365 * effectiveOwnership
+            double expectedAnnualSavings = 4_506_169.55;
+            String formattedExpectedSavings = String.format("%,.2f", expectedAnnualSavings);
+            assertTrue(content.contains(formattedExpectedSavings),
+                "Expected to find formatted savings amount: " + formattedExpectedSavings);
+        }
+
+        @Test
+        @DisplayName("generateTaxDocument handles large monetary amounts")
+        void testGenerateTaxDocument_largeAmounts() throws IOException {
+            // Given
+            double dailyGeneration = 12345.678; // Will accumulate to over 1M for the year
+            double effectiveOwnership = wattageOwnership * 150; // Higher ownership percentage
+
+            PerformanceStatEntry entry = mock(PerformanceStatEntry.class);
+            when(savingsRateService.getSavingsRateForDate(any(), any())).thenReturn(2.0); // Higher rate to get larger numbers
+            when(entry.getKWhGenerated()).thenReturn(dailyGeneration);
+            when(performanceStatEntryRepository.findFirstBySiteAndForDateBetweenOrderByTimestampDesc(any(), any(), any()))
+                    .thenReturn(entry);
+            when(memberOwnershipService.getMemberOwnershipForSite(any(), any(), eq(userId), eq(wattageOwnership)))
+                    .thenReturn(effectiveOwnership);
+
+            // When
+            byte[] result = service.generateTaxDocument(from, to, wattageOwnership, userId);
+
+            // Then
+            String content = extractPdfContent(result);
+
+            // Verify large monetary amounts are properly formatted
+            double expectedAnnualSavings = 135_185_174.10;
+            String formattedExpectedSavings = String.format("%,.2f", expectedAnnualSavings);
+            assertTrue(content.contains(formattedExpectedSavings),
+                "Expected to find formatted large amount: " + formattedExpectedSavings);
         }
 
         @Test
         @DisplayName("generateTaxDocument handles missing performance data")
         void testGenerateTaxDocument_withMissingData() throws IOException {
             // Given
+            double effectiveOwnership = wattageOwnership * 50; // Base ownership percentage
+
             when(savingsRateService.getSavingsRateForDate(any(), any())).thenReturn(1.0);
             when(performanceStatEntryRepository.findFirstBySiteAndForDateBetweenOrderByTimestampDesc(any(), any(), any()))
                     .thenReturn(null);
@@ -202,7 +244,7 @@ class GraigFathaMemberServiceImplTest {
             when(statEntry.getKWhGenerated()).thenReturn(200.0);
             entityHelperMock.when(() -> EntityHelper.createPerformanceStatEntry(any(), any())).thenReturn(statEntry);
             when(memberOwnershipService.getMemberOwnershipForSite(any(), any(), eq(userId), eq(wattageOwnership)))
-                    .thenReturn(wattageOwnership);
+                    .thenReturn(effectiveOwnership);
 
             // When
             byte[] result = service.generateTaxDocument(from, to, wattageOwnership, userId);
@@ -232,6 +274,14 @@ class GraigFathaMemberServiceImplTest {
             assertThrows(NullPointerException.class, () ->
                 service.generateTaxDocument(from, to, wattageOwnership, null)
             );
+        }
+    }
+
+    // Helper method to extract text content from PDF bytes
+    private String extractPdfContent(byte[] pdfBytes) throws IOException {
+        try (var document = Loader.loadPDF(pdfBytes)) {
+            var stripper = new PDFTextStripper();
+            return stripper.getText(document);
         }
     }
 }
