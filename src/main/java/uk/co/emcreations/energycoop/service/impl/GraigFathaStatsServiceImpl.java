@@ -25,23 +25,34 @@ import java.util.Optional;
 public class GraigFathaStatsServiceImpl implements GraigFathaStatsService {
     private final VensysGraigFathaClient client;
     private final AlertService alertService;
+
     @Value("${alerts.thresholds.availability:75.0}")
     private double availabilityThreshold;
     @Value("${alerts.thresholds.failure-time:100.0}")
     private double failureTimeThreshold;
 
     @Override
-    public VensysMeanData getMeanEnergyYield() {
+    public Optional<VensysMeanData> getMeanEnergyYield() {
         log.info("getEnergyYield() called");
 
         VensysMeanDataResponse meanDataResponse = client.getMeanEnergyYield();
         Optional<VensysMeanData> meanDataOptional = Optional.ofNullable(meanDataResponse.data());
 
-        return meanDataOptional.orElseGet(() -> {
+        if (meanDataOptional.isPresent()) {
+            return meanDataOptional;
+        } else {
             log.warn("No mean energy yield data available from client, falling back to current performance data.");
-            VensysPerformanceData currentPerformance = getCurrentPerformance();
-            return VensysMeanData.builder().value(currentPerformance.energyYield()).build();
-        });
+
+            Optional<VensysPerformanceData> performanceData = getCurrentPerformance();
+
+            if (performanceData.isPresent()) {
+                return Optional.of(VensysMeanData.builder()
+                        .value(performanceData.get().energyYield())
+                        .build());
+            } else {
+                return Optional.empty(); // We tried everything, return an empty optional
+            }
+        }
     }
 
     @Override
@@ -51,11 +62,15 @@ public class GraigFathaStatsServiceImpl implements GraigFathaStatsService {
         var from = LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MIDNIGHT);
         var to = LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MAX);
 
-        return getPerformance(from, to);
+        return getPerformance(from, to)
+                .orElseGet(() -> {
+                    log.warn("No performance data available for yesterday, returning empty data");
+                    return VensysPerformanceData.builder().date(from).build();
+                });
     }
 
     @Override
-    public VensysPerformanceData getPerformance(final LocalDateTime from, final LocalDateTime to) {
+    public Optional<VensysPerformanceData> getPerformance(final LocalDateTime from, final LocalDateTime to) {
         log.info("getPerformance() called from: {}, to: {}", from, to);
 
         var fromTimestamp = from.toEpochSecond(ZoneOffset.UTC);
@@ -64,16 +79,30 @@ public class GraigFathaStatsServiceImpl implements GraigFathaStatsService {
         VensysPerformanceDataResponse response = client.getPerformance(fromTimestamp, toTimestamp);
         validatePerformanceData(response);
 
-        return response.data()[0];
+        if (isInvalidResponse(response)) {
+            log.warn("No performance data available for period {} to {}", from, to);
+            return Optional.empty();
+        }
+
+        return Optional.of(response.data()[0]);
     }
 
-    private VensysPerformanceData getCurrentPerformance() {
+    private Optional<VensysPerformanceData> getCurrentPerformance() {
         log.info("getCurrentPerformance() called");
 
         VensysPerformanceDataResponse response = client.getCurrentPerformance();
         validatePerformanceData(response);
 
-        return response.data()[0];
+        if (isInvalidResponse(response)) {
+            log.warn("No current performance data available");
+            return Optional.empty();
+        }
+
+        return Optional.of(response.data()[0]);
+    }
+
+    private boolean isInvalidResponse(VensysPerformanceDataResponse response) {
+        return response == null || response.data() == null || response.data().length == 0 || response.data()[0] == null;
     }
 
     private void validatePerformanceData(final VensysPerformanceDataResponse response) {
@@ -81,9 +110,14 @@ public class GraigFathaStatsServiceImpl implements GraigFathaStatsService {
 
         if (response == null) {
             alertMessage.append("Performance response is null.\n");
+        } else if (response.data() == null) {
+            alertMessage.append("Performance data array is null.\n");
+        } else if (response.data().length == 0) {
+            alertMessage.append("Performance data array is empty.\n");
+        } else if (response.data()[0] == null) {
+            alertMessage.append("First performance data entry is null.\n");
         } else {
             VensysPerformanceData data = response.data()[0];
-
             if (availabilityThreshold >= data.availability()) {
                 alertMessage.append("Availability (").append(data.availability()).append("%) less than threshold (")
                         .append(availabilityThreshold).append("%).\n");
@@ -111,7 +145,9 @@ public class GraigFathaStatsServiceImpl implements GraigFathaStatsService {
         }
 
         if (!alertMessage.isEmpty()) {
-            var timeStr = (null != response) ? response.from() + " -> " + response.to() + "\n" : "Unknown";
+            var timeStr = (response != null && response.from() != null && response.to() != null)
+                    ? response.from() + " -> " + response.to() + "\n"
+                    : "Unknown";
 
             alertMessage.insert(0, "(" + timeStr + "): ");
 

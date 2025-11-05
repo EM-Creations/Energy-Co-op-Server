@@ -14,6 +14,8 @@ import uk.co.emcreations.energycoop.dto.VensysMeanData;
 import uk.co.emcreations.energycoop.dto.VensysPerformanceData;
 import uk.co.emcreations.energycoop.service.impl.GraigFathaStatsServiceImpl;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
@@ -36,7 +38,7 @@ class GraigFathaStatsControllerTest {
     void testGetEnergyYield() throws Exception {
         var expectedEnergyYield = VensysMeanData.builder().value(100).build();
 
-        when(service.getMeanEnergyYield()).thenReturn(expectedEnergyYield);
+        when(service.getMeanEnergyYield()).thenReturn(Optional.ofNullable(expectedEnergyYield));
 
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/energyYield").with(oidcLogin()))
                 .andExpect(status().isOk())
@@ -80,7 +82,7 @@ class GraigFathaStatsControllerTest {
     @Test
     @DisplayName("GET /energyYield returns 200 OK with null response")
     void testGetEnergyYield_nullResponse() throws Exception {
-        when(service.getMeanEnergyYield()).thenReturn(null);
+        when(service.getMeanEnergyYield()).thenReturn(Optional.empty());
         mockMvc.perform(MockMvcRequestBuilders.get(baseURL + "/energyYield").with(oidcLogin()))
                 .andExpect(status().isOk());
     }

@@ -18,6 +18,10 @@ import uk.co.emcreations.energycoop.model.Site;
 import uk.co.emcreations.energycoop.service.GraigFathaStatsService;
 import uk.co.emcreations.energycoop.util.EntityHelper;
 
+import java.util.Optional;
+
+import static uk.co.emcreations.energycoop.model.Site.GRAIG_FATHA;
+
 @Slf4j
 @Configuration
 @Transactional
@@ -35,12 +39,16 @@ public class SchedulerConfig {
     public void logEnergyYield() {
         log.info("logEnergyYield running..");
 
-        VensysMeanData energyYield = graigFathaStatsService.getMeanEnergyYield();
+        Optional<VensysMeanData> energyYieldOpt = graigFathaStatsService.getMeanEnergyYield();
 
-        GenerationStatEntry statEntry = EntityHelper.createGenerationStatEntry(energyYield, Site.GRAIG_FATHA);
-        entityManager.persist(statEntry);
+        if (energyYieldOpt.isPresent()) {
+            GenerationStatEntry statEntry = EntityHelper.createGenerationStatEntry(energyYieldOpt.get(), GRAIG_FATHA);
+            entityManager.persist(statEntry);
 
-        log.info("Response = {}", energyYield);
+            log.info("Response = {}", energyYieldOpt.get());
+        } else {
+            log.warn("No energy yield data available to log.");
+        }
     }
 
     @Scheduled(cron = "${scheduling.graig-fatha.schedule.performance:0 0 */6 * * *}")

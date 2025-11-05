@@ -20,9 +20,9 @@ import uk.co.emcreations.energycoop.sourceclient.VensysGraigFathaClient;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -52,18 +52,29 @@ class GraigFathaStatsServiceImplTest {
             when(response.data()).thenReturn(meanData);
             when(client.getMeanEnergyYield()).thenReturn(response);
 
-            VensysMeanData result = service.getMeanEnergyYield();
+            Optional<VensysMeanData> result = service.getMeanEnergyYield();
 
-            assertEquals(meanData, result);
+            assertTrue(result.isPresent());
+            assertEquals(meanData, result.get());
             verify(client).getMeanEnergyYield();
+            verify(client, never()).getCurrentPerformance();
         }
 
         @Test
-        void getMeanEnergyYield_throwsExceptionWhenClientReturnsNull() {
-            when(client.getMeanEnergyYield()).thenReturn(null);
+        void getMeanEnergyYield_returnsEmptyWhenAllSourcesAreMissing() {
+            VensysMeanDataResponse meanResponse = mock(VensysMeanDataResponse.class);
+            when(meanResponse.data()).thenReturn(null);
+            when(client.getMeanEnergyYield()).thenReturn(meanResponse);
 
-            assertThrows(NullPointerException.class, () -> service.getMeanEnergyYield());
+            VensysPerformanceDataResponse perfResponse = mock(VensysPerformanceDataResponse.class);
+            when(perfResponse.data()).thenReturn(null);
+            when(client.getCurrentPerformance()).thenReturn(perfResponse);
+
+            Optional<VensysMeanData> result = service.getMeanEnergyYield();
+
+            assertFalse(result.isPresent());
             verify(client).getMeanEnergyYield();
+            verify(client).getCurrentPerformance();
         }
 
         @Test
@@ -79,21 +90,10 @@ class GraigFathaStatsServiceImplTest {
             when(perfResponse.data()).thenReturn(new VensysPerformanceData[]{perfData});
             when(client.getCurrentPerformance()).thenReturn(perfResponse);
 
-            VensysMeanData result = service.getMeanEnergyYield();
+            Optional<VensysMeanData> result = service.getMeanEnergyYield();
 
-            assertEquals(456.0, result.value());
-            verify(client).getMeanEnergyYield();
-            verify(client).getCurrentPerformance();
-        }
-
-        @Test
-        void getMeanEnergyYield_throwsExceptionWhenCurrentPerformanceNull() {
-            VensysMeanDataResponse meanResponse = mock(VensysMeanDataResponse.class);
-            when(meanResponse.data()).thenReturn(null);
-            when(client.getMeanEnergyYield()).thenReturn(meanResponse);
-            when(client.getCurrentPerformance()).thenReturn(null);
-
-            assertThrows(NullPointerException.class, () -> service.getMeanEnergyYield());
+            assertTrue(result.isPresent());
+            assertEquals(456.0, result.get().value());
             verify(client).getMeanEnergyYield();
             verify(client).getCurrentPerformance();
         }
@@ -103,19 +103,36 @@ class GraigFathaStatsServiceImplTest {
     @DisplayName("getYesterdayPerformance tests")
     class GetYesterdayPerformanceTests {
         @Test
-        @DisplayName("Delegates to getPerformance with correct date range")
-        void getYesterdayPerformance_delegatesToGetPerformance() {
-            var perfData = VensysPerformanceData.builder().powerAvg(42.0).build();
-            var yesterday = LocalDate.now().minusDays(1);
-            var from = LocalDateTime.of(yesterday, LocalTime.MIDNIGHT);
-            var to = LocalDateTime.of(yesterday, LocalTime.MAX);
-            GraigFathaStatsServiceImpl spyService = spy(service);
-            doReturn(perfData).when(spyService).getPerformance(from, to);
+        @DisplayName("Returns performance data for yesterday")
+        void getYesterdayPerformance_returnsData() {
+            var perfData = VensysPerformanceData.builder()
+                    .powerAvg(42.0)
+                    .build();
+            var perfResponse = mock(VensysPerformanceDataResponse.class);
+            when(perfResponse.data()).thenReturn(new VensysPerformanceData[]{perfData});
+            when(client.getPerformance(anyLong(), anyLong())).thenReturn(perfResponse);
 
-            VensysPerformanceData result = spyService.getYesterdayPerformance();
+            VensysPerformanceData result = service.getYesterdayPerformance();
 
             assertEquals(perfData, result);
-            verify(spyService).getPerformance(from, to);
+            verify(client).getPerformance(anyLong(), anyLong());
+        }
+
+        @Test
+        @DisplayName("Returns default object when no data available")
+        void getYesterdayPerformance_returnsDefaultWhenNoData() {
+            var yesterday = LocalDate.now().minusDays(1);
+            var from = LocalDateTime.of(yesterday, LocalTime.MIDNIGHT);
+
+            VensysPerformanceDataResponse response = mock(VensysPerformanceDataResponse.class);
+            when(response.data()).thenReturn(null);
+            when(client.getPerformance(anyLong(), anyLong())).thenReturn(response);
+
+            VensysPerformanceData result = service.getYesterdayPerformance();
+
+            assertNotNull(result);
+            assertEquals(from, result.date());
+            verify(client).getPerformance(anyLong(), anyLong());
         }
     }
 
@@ -123,60 +140,52 @@ class GraigFathaStatsServiceImplTest {
     @DisplayName("getPerformance tests")
     class GetPerformanceTests {
         @Test
-        @DisplayName("Returns first performance data from client")
-        void getPerformance_returnsFirstDataPoint() {
-            VensysPerformanceData[] perfDataArr = { VensysPerformanceData.builder().powerAvg(99.0).build() };
+        @DisplayName("Returns performance data when available")
+        void getPerformance_returnsData() {
+            VensysPerformanceData perfData = VensysPerformanceData.builder()
+                    .powerAvg(99.0)
+                    .build();
             VensysPerformanceDataResponse response = mock(VensysPerformanceDataResponse.class);
-            when(response.data()).thenReturn(perfDataArr);
+            when(response.data()).thenReturn(new VensysPerformanceData[]{perfData});
             when(client.getPerformance(anyLong(), anyLong())).thenReturn(response);
 
             var from = LocalDateTime.now().minusDays(2);
             var to = LocalDateTime.now();
-            VensysPerformanceData result = service.getPerformance(from, to);
+            Optional<VensysPerformanceData> result = service.getPerformance(from, to);
 
-            assertEquals(perfDataArr[0], result);
+            assertTrue(result.isPresent());
+            assertEquals(perfData, result.get());
             verify(client).getPerformance(anyLong(), anyLong());
         }
 
         @Test
-        @DisplayName("Throws NullPointerException when client returns null response")
-        void getPerformance_throwsExceptionWhenClientReturnsNull() {
+        @DisplayName("Returns empty Optional when response is null")
+        void getPerformance_returnsEmptyWhenResponseNull() {
             when(client.getPerformance(anyLong(), anyLong())).thenReturn(null);
 
             var from = LocalDateTime.now().minusDays(2);
             var to = LocalDateTime.now();
+            Optional<VensysPerformanceData> result = service.getPerformance(from, to);
 
-            assertThrows(NullPointerException.class, () -> service.getPerformance(from, to));
+            assertFalse(result.isPresent());
             verify(client).getPerformance(anyLong(), anyLong());
+            verify(alertService).sendAlert(eq(Site.GRAIG_FATHA), contains("Performance response is null"));
         }
 
         @Test
-        @DisplayName("Throws ArrayIndexOutOfBoundsException when client returns empty data array")
-        void getPerformance_throwsExceptionWhenNoData() {
-            VensysPerformanceData[] perfDataArr = {};
+        @DisplayName("Returns empty Optional when data array is empty")
+        void getPerformance_returnsEmptyWhenNoData() {
             VensysPerformanceDataResponse response = mock(VensysPerformanceDataResponse.class);
-            when(response.data()).thenReturn(perfDataArr);
+            when(response.data()).thenReturn(new VensysPerformanceData[]{});
             when(client.getPerformance(anyLong(), anyLong())).thenReturn(response);
 
             var from = LocalDateTime.now().minusDays(2);
             var to = LocalDateTime.now();
+            Optional<VensysPerformanceData> result = service.getPerformance(from, to);
 
-            assertThrows(ArrayIndexOutOfBoundsException.class, () -> service.getPerformance(from, to));
+            assertFalse(result.isPresent());
             verify(client).getPerformance(anyLong(), anyLong());
-        }
-
-        @Test
-        @DisplayName("Throws NullPointerException when client response data is null")
-        void getPerformance_throwsExceptionWhenClientDataIsNull() {
-            VensysPerformanceDataResponse response = mock(VensysPerformanceDataResponse.class);
-            when(response.data()).thenReturn(null);
-            when(client.getPerformance(anyLong(), anyLong())).thenReturn(response);
-
-            var from = LocalDateTime.now().minusDays(2);
-            var to = LocalDateTime.now();
-
-            assertThrows(NullPointerException.class, () -> service.getPerformance(from, to));
-            verify(client).getPerformance(anyLong(), anyLong());
+            verify(alertService).sendAlert(eq(Site.GRAIG_FATHA), contains("Performance data array is empty"));
         }
     }
 
@@ -185,11 +194,15 @@ class GraigFathaStatsServiceImplTest {
     class ValidatePerformanceDataTests {
         @Test
         @DisplayName("Sends alert when response is null")
-        void validatePerformanceData_sendsAlertWhenResponseIsNull() {
+        void validatePerformanceData_sendsAlertWhenResponseNull() {
             when(client.getPerformance(anyLong(), anyLong())).thenReturn(null);
 
-            assertThrows(NullPointerException.class, () -> service.getPerformance(LocalDateTime.now(), LocalDateTime.now()));
+            var from = LocalDateTime.now().minusDays(2);
+            var to = LocalDateTime.now();
+            var result = service.getPerformance(from, to);
 
+            assertFalse(result.isPresent());
+            verify(client).getPerformance(anyLong(), anyLong());
             verify(alertService).sendAlert(eq(Site.GRAIG_FATHA), argThat(message ->
                 message.contains("Performance response is null")));
         }
@@ -202,76 +215,44 @@ class GraigFathaStatsServiceImplTest {
                     .build();
             VensysPerformanceDataResponse response = mock(VensysPerformanceDataResponse.class);
             when(response.data()).thenReturn(new VensysPerformanceData[]{perfData});
+            when(response.from()).thenReturn("2025-11-05T00:00:00");
+            when(response.to()).thenReturn("2025-11-05T23:59:59");
             when(client.getPerformance(anyLong(), anyLong())).thenReturn(response);
 
-            service.getPerformance(LocalDateTime.now(), LocalDateTime.now());
+            var from = LocalDateTime.now();
+            var to = LocalDateTime.now();
+            service.getPerformance(from, to);
 
             verify(alertService).sendAlert(eq(Site.GRAIG_FATHA), argThat(message ->
+                message.contains("2025-11-05T00:00:00 -> 2025-11-05T23:59:59") &&
                 message.contains("Availability (70.0%) less than threshold (75.0%)")));
         }
 
         @Test
-        @DisplayName("Sends alert when fire time exceeds threshold")
-        void validatePerformanceData_sendsAlertWhenFireTimeExceedsThreshold() {
+        @DisplayName("Sends alert when all failure metrics exceed threshold")
+        void validatePerformanceData_sendsAlertWhenAllFailureMetricsExceedThreshold() {
             var perfData = VensysPerformanceData.builder()
                     .fireTime(150.0)
+                    .commFailureTime(150.0)
+                    .gridFailureTime(150.0)
+                    .errorTime(150.0)
                     .build();
             VensysPerformanceDataResponse response = mock(VensysPerformanceDataResponse.class);
             when(response.data()).thenReturn(new VensysPerformanceData[]{perfData});
+            when(response.from()).thenReturn("2025-11-05T00:00:00");
+            when(response.to()).thenReturn("2025-11-05T23:59:59");
             when(client.getPerformance(anyLong(), anyLong())).thenReturn(response);
 
-            service.getPerformance(LocalDateTime.now(), LocalDateTime.now());
+            var from = LocalDateTime.now();
+            var to = LocalDateTime.now();
+            service.getPerformance(from, to);
 
             verify(alertService).sendAlert(eq(Site.GRAIG_FATHA), argThat(message ->
-                message.contains("Fire time (150.0s) exceeds threshold (100.0s)")));
-        }
-
-        @Test
-        @DisplayName("Sends alert when comm failure time exceeds threshold")
-        void validatePerformanceData_sendsAlertWhenCommFailureTimeExceedsThreshold() {
-            var perfData = VensysPerformanceData.builder()
-                    .commFailureTime(120.0)
-                    .build();
-            VensysPerformanceDataResponse response = mock(VensysPerformanceDataResponse.class);
-            when(response.data()).thenReturn(new VensysPerformanceData[]{perfData});
-            when(client.getPerformance(anyLong(), anyLong())).thenReturn(response);
-
-            service.getPerformance(LocalDateTime.now(), LocalDateTime.now());
-
-            verify(alertService).sendAlert(eq(Site.GRAIG_FATHA), argThat(message ->
-                message.contains("Comm failure time (120.0s) exceeds threshold (100.0s)")));
-        }
-
-        @Test
-        @DisplayName("Sends alert when grid failure time exceeds threshold")
-        void validatePerformanceData_sendsAlertWhenGridFailureTimeExceedsThreshold() {
-            var perfData = VensysPerformanceData.builder()
-                    .gridFailureTime(110.0)
-                    .build();
-            VensysPerformanceDataResponse response = mock(VensysPerformanceDataResponse.class);
-            when(response.data()).thenReturn(new VensysPerformanceData[]{perfData});
-            when(client.getPerformance(anyLong(), anyLong())).thenReturn(response);
-
-            service.getPerformance(LocalDateTime.now(), LocalDateTime.now());
-
-            verify(alertService).sendAlert(eq(Site.GRAIG_FATHA), argThat(message ->
-                message.contains("Grid failure time (110.0s) exceeds threshold (100.0s)")));
-        }
-
-        @Test
-        @DisplayName("Sends alert when error time exceeds threshold")
-        void validatePerformanceData_sendsAlertWhenErrorTimeExceedsThreshold() {
-            var perfData = VensysPerformanceData.builder()
-                    .errorTime(130.0)
-                    .build();
-            VensysPerformanceDataResponse response = mock(VensysPerformanceDataResponse.class);
-            when(response.data()).thenReturn(new VensysPerformanceData[]{perfData});
-            when(client.getPerformance(anyLong(), anyLong())).thenReturn(response);
-
-            service.getPerformance(LocalDateTime.now(), LocalDateTime.now());
-
-            verify(alertService).sendAlert(eq(Site.GRAIG_FATHA), argThat(message ->
-                message.contains("Error time (130.0s) exceeds threshold (100.0s)")));
+                message.contains("2025-11-05T00:00:00 -> 2025-11-05T23:59:59") &&
+                message.contains("Fire time (150.0s)") &&
+                message.contains("Comm failure time (150.0s)") &&
+                message.contains("Grid failure time (150.0s)") &&
+                message.contains("Error time (150.0s)")));
         }
 
         @Test
@@ -288,27 +269,11 @@ class GraigFathaStatsServiceImplTest {
             when(response.data()).thenReturn(new VensysPerformanceData[]{perfData});
             when(client.getPerformance(anyLong(), anyLong())).thenReturn(response);
 
-            service.getPerformance(LocalDateTime.now(), LocalDateTime.now());
+            var from = LocalDateTime.now();
+            var to = LocalDateTime.now();
+            service.getPerformance(from, to);
 
             verify(alertService, never()).sendAlert(any(), any());
-        }
-
-        @Test
-        @DisplayName("Includes timestamp range in alert message")
-        void validatePerformanceData_includesTimestampInAlertMessage() {
-            var perfData = VensysPerformanceData.builder()
-                    .errorTime(130.0)
-                    .build();
-            VensysPerformanceDataResponse response = mock(VensysPerformanceDataResponse.class);
-            when(response.data()).thenReturn(new VensysPerformanceData[]{perfData});
-            when(response.from()).thenReturn("2025-10-19T00:00:00");
-            when(response.to()).thenReturn("2025-10-19T23:59:59");
-            when(client.getPerformance(anyLong(), anyLong())).thenReturn(response);
-
-            service.getPerformance(LocalDateTime.now(), LocalDateTime.now());
-
-            verify(alertService).sendAlert(eq(Site.GRAIG_FATHA), argThat(message ->
-                message.contains("2025-10-19T00:00:00 -> 2025-10-19T23:59:59")));
         }
     }
 }

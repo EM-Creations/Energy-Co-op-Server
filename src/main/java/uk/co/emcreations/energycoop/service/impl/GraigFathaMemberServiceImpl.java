@@ -26,6 +26,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import static uk.co.emcreations.energycoop.model.Site.GRAIG_FATHA;
@@ -144,12 +145,16 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
         if (null != todayGenerationSoFar) { // If there's data for today, return it
             return todayGenerationSoFar.getKWhGenerated();
         } else { // if there's no data for today, fetch it and store it
-            VensysMeanData energyYield = graigFathaStatsService.getMeanEnergyYield();
+            Optional<VensysMeanData> energyYieldOpt = graigFathaStatsService.getMeanEnergyYield();
 
-            GenerationStatEntry statEntry = EntityHelper.createGenerationStatEntry(energyYield, GRAIG_FATHA);
-            entityManager.persist(statEntry);
+            if (energyYieldOpt.isPresent()) {
+                GenerationStatEntry statEntry = EntityHelper.createGenerationStatEntry(energyYieldOpt.get(), GRAIG_FATHA);
+                entityManager.persist(statEntry);
 
-            return statEntry.getKWhGenerated();
+                return statEntry.getKWhGenerated();
+            } else {
+                return 0;
+            }
         }
     }
 
@@ -160,12 +165,16 @@ public class GraigFathaMemberServiceImpl implements GraigFathaMemberService {
         if (null != generationOnDay) { // If there's data for this day, return it
             return generationOnDay.getKWhGenerated();
         } else { // if there's no data for this day, fetch it and store it
-            VensysPerformanceData performanceData = graigFathaStatsService.getPerformance(start, end);
+            Optional<VensysPerformanceData> performanceDataOpt = graigFathaStatsService.getPerformance(start, end);
 
-            PerformanceStatEntry statEntry = EntityHelper.createPerformanceStatEntry(performanceData, GRAIG_FATHA);
-            entityManager.persist(statEntry);
+            if (performanceDataOpt.isPresent()) {
+                PerformanceStatEntry statEntry = EntityHelper.createPerformanceStatEntry(performanceDataOpt.get(), GRAIG_FATHA);
+                entityManager.persist(statEntry);
 
-            return statEntry.getKWhGenerated();
+                return statEntry.getKWhGenerated();
+            } else {
+                return 0;
+            }
         }
     }
 

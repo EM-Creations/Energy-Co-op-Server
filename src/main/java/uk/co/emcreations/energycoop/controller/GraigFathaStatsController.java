@@ -24,7 +24,7 @@ public class GraigFathaStatsController {
     @GetMapping(name = "Current energy yield", value = "/energyYield")
     @Operation(summary = "Current energy yield", description = "Returns today's current energy yield")
     public VensysMeanData getEnergyYield() {
-        return graigFathaStatsService.getMeanEnergyYield();
+        return graigFathaStatsService.getMeanEnergyYield().orElse(VensysMeanData.builder().build());
     }
 
     @HasGraigFathaAPIRead

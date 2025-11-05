@@ -4,9 +4,10 @@ import uk.co.emcreations.energycoop.dto.VensysMeanData;
 import uk.co.emcreations.energycoop.dto.VensysPerformanceData;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 public interface GraigFathaStatsService {
-    VensysMeanData getMeanEnergyYield();
+    Optional<VensysMeanData> getMeanEnergyYield();
     VensysPerformanceData getYesterdayPerformance();
-    VensysPerformanceData getPerformance(final LocalDateTime from, final LocalDateTime to);
+    Optional<VensysPerformanceData> getPerformance(LocalDateTime from, LocalDateTime to);
 }

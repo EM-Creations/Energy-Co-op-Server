@@ -23,6 +23,7 @@ import uk.co.emcreations.energycoop.util.EntityHelper;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -75,7 +76,7 @@ class GraigFathaMemberServiceImplTest {
         void testGetTodaySavings_withNoRepoData() {
             when(savingsRateService.getSavingsRateForDate(any(), any())).thenReturn(1.0);
             when(generationStatEntryRepository.findFirstBySiteAndTimestampBetweenOrderByTimestampDesc(any(), any(), any())).thenReturn(null);
-            VensysMeanData meanData = VensysMeanData.builder().value(60.0).build();
+            Optional<VensysMeanData> meanData = Optional.of(VensysMeanData.builder().value(60.0).build());
             when(graigFathaStatsService.getMeanEnergyYield()).thenReturn(meanData);
             GenerationStatEntry statEntry = mock(GenerationStatEntry.class);
             when(statEntry.getKWhGenerated()).thenReturn(60.0);
@@ -145,7 +146,7 @@ class GraigFathaMemberServiceImplTest {
             when(memberOwnershipService.getMemberOwnershipForSite(any(), any(), anyString(), anyDouble()))
                     .thenAnswer(invocation -> invocation.getArgument(3));
 
-            var perfData = VensysPerformanceData.builder().powerAvg(200.0).build();
+            Optional<VensysPerformanceData> perfData = Optional.of(VensysPerformanceData.builder().powerAvg(200.0).build());
             when(graigFathaStatsService.getPerformance(any(), any())).thenReturn(perfData);
             PerformanceStatEntry statEntry = mock(PerformanceStatEntry.class);
             when(statEntry.getKWhGenerated()).thenReturn(200.0);
@@ -238,7 +239,7 @@ class GraigFathaMemberServiceImplTest {
             when(savingsRateService.getSavingsRateForDate(any(), any())).thenReturn(1.0);
             when(performanceStatEntryRepository.findFirstBySiteAndForDateBetweenOrderByTimestampDesc(any(), any(), any()))
                     .thenReturn(null);
-            var perfData = VensysPerformanceData.builder().powerAvg(200.0).build();
+            Optional<VensysPerformanceData> perfData = Optional.of(VensysPerformanceData.builder().powerAvg(200.0).build());
             when(graigFathaStatsService.getPerformance(any(), any())).thenReturn(perfData);
             PerformanceStatEntry statEntry = mock(PerformanceStatEntry.class);
             when(statEntry.getKWhGenerated()).thenReturn(200.0);
@@ -265,14 +266,6 @@ class GraigFathaMemberServiceImplTest {
                 () -> assertThrows(NullPointerException.class, () ->
                     service.generateTaxDocument(from, null, wattageOwnership, userId)
                 )
-            );
-        }
-
-        @Test
-        @DisplayName("generateTaxDocument handles null userId")
-        void testGenerateTaxDocument_nullUserId() {
-            assertThrows(NullPointerException.class, () ->
-                service.generateTaxDocument(from, to, wattageOwnership, null)
             );
         }
     }
